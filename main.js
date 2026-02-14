@@ -97,26 +97,38 @@ class OpenClawApp {
   }
 
   createWindow() {
-    this.mainWindow = new BrowserWindow({
+    const windowOpts = {
       width: 1400,
       height: 900,
-      minWidth: 1024,
-      minHeight: 768,
-      titleBarStyle: 'hiddenInset',
-      vibrancy: 'ultra-dark',
-      transparent: true,
-      frame: true,
+      minWidth: 800,
+      minHeight: 600,
       show: false,
+      backgroundColor: '#0a0a0f',
+      titleBarStyle: 'hiddenInset',
+      trafficLightPosition: { x: 16, y: 16 },
+      fullscreenable: true,
+      fullscreen: false,
+      simpleFullscreen: false,
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         nodeIntegration: false,
         contextIsolation: true,
         webSecurity: true
       }
-    });
+    };
 
-    // Inject custom CSS after any page loads
+    // macOS-specific native features
+    if (process.platform === 'darwin') {
+      windowOpts.vibrancy = 'sidebar';
+      windowOpts.visualEffectState = 'active';
+      windowOpts.roundedCorners = true;
+    }
+
+    this.mainWindow = new BrowserWindow(windowOpts);
+
+    // Inject drag region + custom CSS after every page load
     this.mainWindow.webContents.on('did-finish-load', () => {
+      this.injectDragRegion();
       this.injectCustomCSS();
     });
 
@@ -132,12 +144,68 @@ class OpenClawApp {
       }
     });
 
+    // Native macOS window state events
+    this.mainWindow.on('enter-full-screen', () => {
+      console.log('[OpenClaw] Entered fullscreen');
+    });
+    this.mainWindow.on('leave-full-screen', () => {
+      console.log('[OpenClaw] Left fullscreen');
+    });
+
     if (this.isDev) {
       this.mainWindow.webContents.openDevTools();
     }
 
     this.setupMenu();
     this.connectToGateway();
+  }
+
+  /**
+   * Inject a native macOS drag region into the top of any loaded page
+   */
+  async injectDragRegion() {
+    try {
+      await this.mainWindow.webContents.executeJavaScript(`
+        (function() {
+          // Remove any existing drag region
+          const existing = document.getElementById('openclaw-drag-region');
+          if (existing) existing.remove();
+
+          // Create drag region overlay
+          const drag = document.createElement('div');
+          drag.id = 'openclaw-drag-region';
+          drag.style.cssText = [
+            'position: fixed',
+            'top: 0',
+            'left: 0',
+            'right: 0',
+            'height: 38px',
+            'z-index: 99999',
+            '-webkit-app-region: drag',
+            'pointer-events: auto',
+            'background: transparent'
+          ].join(';');
+
+          // Make buttons/links inside the drag region clickable (no-drag)
+          drag.addEventListener('mousedown', function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' ||
+                e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' ||
+                e.target.closest('button') || e.target.closest('a') ||
+                e.target.closest('[role="button"]')) {
+              e.stopPropagation();
+            }
+          });
+
+          document.body.appendChild(drag);
+
+          // Add padding to body so content isn't hidden behind traffic lights
+          document.body.style.paddingTop = '38px';
+        })();
+      `);
+      console.log('[OpenClaw] Drag region injected');
+    } catch (e) {
+      console.log('[OpenClaw] Could not inject drag region:', e.message);
+    }
   }
 
   /**
@@ -380,7 +448,17 @@ class OpenClawApp {
       },
       {
         label: 'Window',
-        submenu: [{ role: 'minimize' }, { role: 'close' }]
+        role: 'windowMenu',
+        submenu: [
+          { role: 'minimize' },
+          { role: 'zoom' },
+          { type: 'separator' },
+          { role: 'togglefullscreen' },
+          { type: 'separator' },
+          { role: 'front' },
+          { type: 'separator' },
+          { role: 'close' }
+        ]
       }
     ];
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -416,18 +494,36 @@ class OpenClawApp {
 
   showAboutPanel() {
     const aboutWindow = new BrowserWindow({
-      width: 400, height: 300, modal: true, parent: this.mainWindow,
-      titleBarStyle: 'hiddenInset', vibrancy: 'under-window', transparent: true
+      width: 420, height: 320, modal: true, parent: this.mainWindow,
+      titleBarStyle: 'hiddenInset',
+      backgroundColor: '#0a0a0f',
+      resizable: false,
+      minimizable: false,
+      maximizable: false
     });
-    aboutWindow.loadURL(`data:text/html;charset=utf-8,
-      <html><head><style>
-        body { font-family: -apple-system, sans-serif; background: transparent; color: white; text-align: center; padding: 40px; }
-        h1 { font-size: 24px; } p { opacity: 0.7; }
-      </style></head><body>
-        <h1>OpenClaw</h1>
-        <p>Version ${app.getVersion()}</p>
-        <p>Mac Fluid Edition</p>
-      </body></html>`);
+    aboutWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`<!DOCTYPE html>
+<html><head><meta name="color-scheme" content="dark"><style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #0a0a0f; color: #c8c8d8;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; gap: 12px; text-align: center;
+  }
+  .drag { -webkit-app-region: drag; position: fixed; top: 0; left: 0; right: 0; height: 38px; }
+  h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #00d4ff, #a855f7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .version { font-size: 14px; color: #5a5a7a; }
+  .edition { font-size: 12px; color: #44446a; margin-top: 4px; }
+</style></head><body>
+  <div class="drag"></div>
+  <h1>OpenClaw</h1>
+  <p class="version">Version ${app.getVersion()}</p>
+  <p class="edition">Mac Fluid Edition</p>
+  <p class="edition">Electron ${process.versions.electron} &bull; Node ${process.versions.node}</p>
+</body></html>`)}`);
   }
 
   showPreferences() {
