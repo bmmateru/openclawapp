@@ -21,7 +21,7 @@
       flex-direction: column;
     }
 
-    /* ─── Titlebar with traffic lights ─── */
+    /* ─── Titlebar (drag region for native traffic lights) ─── */
     .titlebar {
       -webkit-app-region: drag;
       height: 44px;
@@ -29,37 +29,15 @@
       flex-shrink: 0;
       display: flex;
       align-items: center;
+      justify-content: center;
       padding: 0 16px;
-      gap: 8px;
     }
-
-    .traffic-light {
-      -webkit-app-region: no-drag;
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s;
-      position: relative;
-    }
-    .traffic-light:active { transform: scale(0.9); }
-
-    .tl-close { background: #ff5f57; }
-    .tl-close:hover { background: #ff3b30; box-shadow: 0 0 6px rgba(255, 59, 48, 0.5); }
-
-    .tl-min { background: #ffbd2e; }
-    .tl-min:hover { background: #f0a500; box-shadow: 0 0 6px rgba(255, 189, 46, 0.5); }
-
-    .tl-max { background: #28c840; opacity: 0.4; cursor: default; }
 
     .titlebar-text {
-      flex: 1;
-      text-align: center;
       font-size: 13px;
       font-weight: 600;
       color: rgba(200, 200, 216, 0.6);
       letter-spacing: -0.01em;
-      margin-right: 52px; /* balance the traffic lights */
     }
 
     /* ─── Scrollable content ─── */
@@ -227,9 +205,6 @@
 </head>
 <body>
   <div class="titlebar">
-    <button class="traffic-light tl-close" onclick="window.close()" title="Close"></button>
-    <button class="traffic-light tl-min" onclick="window.close()" title="Minimize"></button>
-    <button class="traffic-light tl-max" title="Maximize" disabled></button>
     <span class="titlebar-text">Preferences</span>
   </div>
 

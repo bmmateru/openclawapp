@@ -61,6 +61,7 @@ class OpenClawApp {
     this.customCssPath = null;
     this.currentTheme = 'deep-space';
     this.settingsPath = path.join(process.env.HOME || '', '.openclaw', 'app-settings.json');
+    this.injectedCssKeys = []; // Track CSS keys for removal on theme switch
 
     this.loadSettings();
     this.loadOpenClawConfig();
@@ -228,6 +229,7 @@ class OpenClawApp {
     this.mainWindow.webContents.on('did-finish-load', () => {
       this.injectAppShell();
       this.injectCustomCSS();
+      this.injectSoundEffects();
     });
 
     this.mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -252,8 +254,14 @@ class OpenClawApp {
     try {
       const t = THEMES[this.currentTheme];
 
+      // Remove previously injected CSS to avoid stacking themes
+      for (const key of this.injectedCssKeys) {
+        try { await this.mainWindow.webContents.removeInsertedCSS(key); } catch (e) {}
+      }
+      this.injectedCssKeys = [];
+
       // 1. Theme + scroll-fix + layout CSS
-      await this.mainWindow.webContents.insertCSS(`
+      const cssKey = await this.mainWindow.webContents.insertCSS(`
         /* === OpenClaw Theme: ${t.name} === */
         ${this.getThemeCSS()}
 
@@ -323,6 +331,7 @@ class OpenClawApp {
           padding-top: 0 !important;
         }
       `);
+      this.injectedCssKeys.push(cssKey);
 
       // 2. Drag region
       await this.mainWindow.webContents.executeJavaScript(`
@@ -490,9 +499,161 @@ h1{font-size:30px;font-weight:800;letter-spacing:-0.03em;
     if (!this.customCssPath) return;
     try {
       const css = fs.readFileSync(this.customCssPath, 'utf-8');
-      await this.mainWindow.webContents.insertCSS(css);
+      const key = await this.mainWindow.webContents.insertCSS(css);
+      this.injectedCssKeys.push(key);
     } catch (e) {
       console.log('[OpenClaw] Could not inject custom CSS:', e.message);
+    }
+  }
+
+  // ─── Sound Effects ─────────────────────────────────────────────────
+
+  async injectSoundEffects() {
+    try {
+      await this.mainWindow.webContents.executeJavaScript(`
+        (function() {
+          if (window.__openclawSounds) return;
+          window.__openclawSounds = true;
+
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+          // Subtle chime — two soft sine tones
+          function playChime(type) {
+            if (ctx.state === 'suspended') ctx.resume();
+            const now = ctx.currentTime;
+            const gain = ctx.createGain();
+            gain.connect(ctx.destination);
+
+            if (type === 'send') {
+              // Message sent: short ascending double-tap
+              gain.gain.setValueAtTime(0, now);
+              gain.gain.linearRampToValueAtTime(0.06, now + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+              const o1 = ctx.createOscillator();
+              o1.type = 'sine';
+              o1.frequency.setValueAtTime(880, now);
+              o1.connect(gain);
+              o1.start(now);
+              o1.stop(now + 0.15);
+              const o2 = ctx.createOscillator();
+              o2.type = 'sine';
+              o2.frequency.setValueAtTime(1100, now + 0.08);
+              const g2 = ctx.createGain();
+              g2.gain.setValueAtTime(0, now);
+              g2.gain.linearRampToValueAtTime(0.04, now + 0.1);
+              g2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+              g2.connect(ctx.destination);
+              o2.connect(g2);
+              o2.start(now + 0.08);
+              o2.stop(now + 0.3);
+
+            } else if (type === 'receive') {
+              // Response arrived: soft descending bell
+              gain.gain.setValueAtTime(0, now);
+              gain.gain.linearRampToValueAtTime(0.07, now + 0.01);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+              const o1 = ctx.createOscillator();
+              o1.type = 'sine';
+              o1.frequency.setValueAtTime(1320, now);
+              o1.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+              o1.connect(gain);
+              o1.start(now);
+              o1.stop(now + 0.5);
+              // Harmonic overtone
+              const o2 = ctx.createOscillator();
+              o2.type = 'sine';
+              o2.frequency.setValueAtTime(1760, now);
+              o2.frequency.exponentialRampToValueAtTime(1320, now + 0.2);
+              const g2 = ctx.createGain();
+              g2.gain.setValueAtTime(0.02, now);
+              g2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+              g2.connect(ctx.destination);
+              o2.connect(g2);
+              o2.start(now);
+              o2.stop(now + 0.4);
+
+            } else if (type === 'thinking') {
+              // Thinking: very soft low hum pulse
+              gain.gain.setValueAtTime(0, now);
+              gain.gain.linearRampToValueAtTime(0.025, now + 0.1);
+              gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+              const o1 = ctx.createOscillator();
+              o1.type = 'sine';
+              o1.frequency.setValueAtTime(440, now);
+              o1.connect(gain);
+              o1.start(now);
+              o1.stop(now + 0.6);
+            }
+          }
+
+          // Watch for chat activity via DOM mutations
+          let wasThinking = false;
+          let thinkingTimeout = null;
+
+          const observer = new MutationObserver(function(mutations) {
+            for (const m of mutations) {
+              // Detect new nodes added
+              for (const node of m.addedNodes) {
+                if (!(node instanceof HTMLElement)) continue;
+                const text = (node.className || '') + ' ' + (node.textContent || '');
+                const lower = text.toLowerCase();
+
+                // Detect thinking/loading indicators
+                if (lower.includes('thinking') || lower.includes('loading') ||
+                    lower.includes('spinner') || node.querySelector && node.querySelector('.spinner, [class*=loading], [class*=thinking]')) {
+                  if (!wasThinking) {
+                    wasThinking = true;
+                    playChime('thinking');
+                  }
+                  clearTimeout(thinkingTimeout);
+                  thinkingTimeout = setTimeout(function() { wasThinking = false; }, 3000);
+                }
+
+                // Detect assistant/bot response messages
+                if ((node.className || '').match(/assistant|bot|response|ai-message|reply/i) ||
+                    (node.getAttribute && (node.getAttribute('data-role') === 'assistant' ||
+                     node.getAttribute('data-sender') === 'bot'))) {
+                  if (wasThinking) {
+                    wasThinking = false;
+                    clearTimeout(thinkingTimeout);
+                  }
+                  playChime('receive');
+                }
+              }
+            }
+          });
+
+          // Watch for form submissions (user sending messages)
+          document.addEventListener('submit', function() {
+            playChime('send');
+          }, true);
+
+          // Also watch for Enter key in chat inputs
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              const tag = e.target.tagName;
+              const role = e.target.getAttribute('role') || '';
+              if (tag === 'TEXTAREA' || tag === 'INPUT' || role === 'textbox' ||
+                  e.target.contentEditable === 'true') {
+                // Small delay to let the form submit
+                setTimeout(function() { playChime('send'); }, 50);
+              }
+            }
+          }, true);
+
+          // Start observing
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+
+          console.log('[OpenClaw] Sound effects enabled (send/receive/thinking chimes)');
+        })();
+      `);
+      console.log('[OpenClaw] Sound effects injected');
+    } catch (e) {
+      console.log('[OpenClaw] Could not inject sound effects:', e.message);
     }
   }
 
@@ -603,10 +764,11 @@ h1{font-size:30px;font-weight:800;letter-spacing:-0.03em;
     const about = new BrowserWindow({
       width: 400, height: 300,
       parent: this.mainWindow,
-      titleBarStyle: 'hidden',
+      titleBarStyle: 'hiddenInset',
+      trafficLightPosition: { x: 14, y: 14 },
       backgroundColor: t.bg,
       resizable: false,
-      minimizable: false,
+      minimizable: true,
       maximizable: false,
       fullscreenable: false
     });
@@ -619,15 +781,7 @@ html,body{width:100%;height:100%;overflow:hidden;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;background:${t.bg};color:${t.text}}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
-.drag{-webkit-app-region:drag;position:fixed;top:0;left:0;right:0;height:28px;z-index:10}
-.close{-webkit-app-region:no-drag;position:fixed;top:8px;left:12px;z-index:20;
-  width:12px;height:12px;border-radius:50%;background:#ff5f57;border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:0;transition:all .15s}
-.close:hover{background:#ff3b30;box-shadow:0 0 6px rgba(255,59,48,0.5)}
-.close:active{transform:scale(0.9)}
-.min{-webkit-app-region:no-drag;position:fixed;top:8px;left:32px;z-index:20;
-  width:12px;height:12px;border-radius:50%;background:#ffbd2e;border:none;cursor:pointer;transition:all .15s}
-.min:hover{background:#f0a500;box-shadow:0 0 6px rgba(255,189,46,0.5)}
+.drag{-webkit-app-region:drag;position:fixed;top:0;left:0;right:0;height:38px;z-index:10}
 .logo{width:56px;height:56px;border-radius:14px;background:${t.glass};
   border:1px solid ${t.border};display:flex;align-items:center;justify-content:center;
   box-shadow:0 0 24px ${t.accent}15}
@@ -639,8 +793,6 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.02em;
 .meta{font-size:11px;color:${t.muted};font-family:"SF Mono",monospace;opacity:0.7}
 </style></head><body>
 <div class="drag"></div>
-<button class="close" onclick="window.close()" title="Close"></button>
-<button class="min" onclick="window.close()" title="Minimize"></button>
 <div class="logo">
   <svg viewBox="0 0 48 48" fill="none"><path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4z" fill="none" stroke="url(#g)" stroke-width="2"/><path d="M16 18c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H18c-1.1 0-2-.9-2-2V18z" fill="none" stroke="url(#g)" stroke-width="1.5"/><circle cx="21" cy="23" r="2" fill="${t.accent}"/><circle cx="27" cy="23" r="2" fill="${t.accent2}"/><path d="M20 28s1.5 2 4 2 4-2 4-2" stroke="${t.accent}" stroke-width="1.5" stroke-linecap="round"/><defs><linearGradient id="g" x1="4" y1="4" x2="44" y2="44"><stop stop-color="${t.accent}"/><stop offset="1" stop-color="${t.accent2}"/></linearGradient></defs></svg>
 </div>
@@ -657,7 +809,8 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.02em;
     const prefs = new BrowserWindow({
       width: 560, height: 540,
       parent: this.mainWindow,
-      titleBarStyle: 'hidden',
+      titleBarStyle: 'hiddenInset',
+      trafficLightPosition: { x: 14, y: 14 },
       backgroundColor: t.bg,
       resizable: true,
       minimizable: true,
