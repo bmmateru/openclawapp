@@ -1,0 +1,23 @@
+{
+  "name": "openclawapp",
+  "version": "4.1.0",
+  "description": "OpenClaw Dashboard - Mac Fluid Modernization Theme",
+  "author": "Bernard Materu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmmateru/openclawapp.git"
+  },
+  "keywords": [
+    "openclaw",
+    "dashboard",
+    "theme",
+    "glassmorphism",
+    "dark-theme",
+    "mac-fluid",
+    "css"
+  ],
+  "scripts": {
+    "apply": "bash scripts/apply.sh"
+  }
+}

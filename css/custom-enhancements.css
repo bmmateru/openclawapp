@@ -1,0 +1,3157 @@
+/* ===========================================
+   OpenClaw Dashboard — Futuristic Dark Theme
+   Apple Vision Pro / iOS Glassmorphism + Mac Fluid Design
+   Author: Bernard Materu × Claude
+   v4.0 — 2026-02-13
+   =========================================== */
+
+/* ===========================================
+   PHASE 0: Premium Font Stack
+   Inter (body) + Plus Jakarta Sans (display) + JetBrains Mono (code)
+   =========================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap");
+
+/* ===========================================
+   PHASE 1: Color System Override
+   Deep space dark + Electric cyan/blue accents
+   =========================================== */
+
+:root {
+  /* Typography — Premium Font Stack */
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif !important;
+  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif !important;
+  --mono: "JetBrains Mono", "SF Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace !important;
+
+  /* Font Sizing Scale — Harmonious */
+  --text-xs: 0.6875rem;    /* 11px */
+  --text-sm: 0.8125rem;    /* 13px */
+  --text-base: 0.875rem;   /* 14px */
+  --text-md: 0.9375rem;    /* 15px */
+  --text-lg: 1.0625rem;    /* 17px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+
+  /* Background — Deep space layers */
+  --bg: #0a0a0f !important;
+  --bg-accent: #0d0d14 !important;
+  --bg-elevated: #12121c !important;
+  --bg-hover: #1a1a2e !important;
+  --bg-muted: #16162a !important;
+
+  /* Card / Surface — Glass layers */
+  --card: rgba(18, 18, 30, 0.7) !important;
+  --card-foreground: #f0f0f5 !important;
+  --card-highlight: rgba(255, 255, 255, 0.04) !important;
+  --popover: rgba(18, 18, 30, 0.9) !important;
+  --popover-foreground: #f0f0f5 !important;
+
+  /* Panel */
+  --panel: #0a0a0f !important;
+  --panel-strong: #12121c !important;
+  --panel-hover: #1a1a2e !important;
+  --chrome: rgba(10, 10, 18, 0.85) !important;
+  --chrome-strong: rgba(10, 10, 18, 0.95) !important;
+
+  /* Text — Cool whites */
+  --text: #c8c8d8 !important;
+  --text-strong: #f0f0f8 !important;
+  --chat-text: #d0d0e0 !important;
+  --muted: #5a5a7a !important;
+  --muted-strong: #44446a !important;
+  --muted-foreground: #5a5a7a !important;
+
+  /* Border — Subtle glass edges */
+  --border: rgba(255, 255, 255, 0.06) !important;
+  --border-strong: rgba(255, 255, 255, 0.12) !important;
+  --border-hover: rgba(255, 255, 255, 0.18) !important;
+  --input: rgba(255, 255, 255, 0.08) !important;
+
+  /* Accent — Electric cyan gradient */
+  --accent: #00d4ff !important;
+  --accent-hover: #33ddff !important;
+  --accent-muted: #00b8e6 !important;
+  --accent-subtle: rgba(0, 212, 255, 0.1) !important;
+  --accent-foreground: #0a0a0f !important;
+  --accent-glow: rgba(0, 212, 255, 0.3) !important;
+  --ring: #00d4ff !important;
+  --primary: #00d4ff !important;
+  --primary-foreground: #0a0a0f !important;
+
+  /* Secondary — Violet accent */
+  --secondary: rgba(20, 20, 40, 0.6) !important;
+  --secondary-foreground: #e0e0f0 !important;
+  --accent-2: #a855f7 !important;
+  --accent-2-muted: rgba(168, 85, 247, 0.7) !important;
+  --accent-2-subtle: rgba(168, 85, 247, 0.12) !important;
+
+  /* Semantic — Neon variants */
+  --ok: #00e676 !important;
+  --ok-muted: rgba(0, 230, 118, 0.7) !important;
+  --ok-subtle: rgba(0, 230, 118, 0.1) !important;
+  --destructive: #ff3d71 !important;
+  --destructive-foreground: #f0f0f8 !important;
+  --warn: #ffab00 !important;
+  --warn-muted: rgba(255, 171, 0, 0.7) !important;
+  --warn-subtle: rgba(255, 171, 0, 0.1) !important;
+  --danger: #ff3d71 !important;
+  --danger-muted: rgba(255, 61, 113, 0.7) !important;
+  --danger-subtle: rgba(255, 61, 113, 0.1) !important;
+  --info: #448aff !important;
+
+  /* Focus — Cyan glow */
+  --focus: rgba(0, 212, 255, 0.2) !important;
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 3px rgba(0, 212, 255, 0.6) !important;
+  --focus-glow: 0 0 0 2px var(--bg), 0 0 0 3px rgba(0, 212, 255, 0.6), 0 0 24px rgba(0, 212, 255, 0.15) !important;
+
+  /* Grid — Subtle */
+  --grid-line: rgba(255, 255, 255, 0.02) !important;
+
+  /* Shadows — Deep with color */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+  --shadow-glow: 0 0 40px rgba(0, 212, 255, 0.15) !important;
+
+  /* Radii — Rounder for softer feel */
+  --radius-sm: 8px !important;
+  --radius-md: 10px !important;
+  --radius-lg: 14px !important;
+  --radius-xl: 20px !important;
+  --radius: 10px !important;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1) !important;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  --duration-fast: 100ms !important;
+  --duration-normal: 180ms !important;
+  --duration-slow: 300ms !important;
+
+  /* Custom futuristic vars */
+  --glass-bg: rgba(14, 14, 24, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(24px) saturate(180%);
+  --gradient-accent: linear-gradient(135deg, #00d4ff, #a855f7);
+  --gradient-accent-subtle: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(168, 85, 247, 0.15));
+  --gradient-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  --neon-glow-cyan: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
+  --neon-glow-green: 0 0 12px rgba(0, 230, 118, 0.4);
+  --neon-glow-red: 0 0 12px rgba(255, 61, 113, 0.4);
+  --neon-glow-violet: 0 0 20px rgba(168, 85, 247, 0.3);
+
+  /* Mac Fluid — Variable aliases for cross-compatibility */
+  --mac-glass: var(--glass-bg);
+  --mac-glass-dark: rgba(0, 0, 0, 0.3);
+  --mac-border: var(--glass-border);
+  --mac-accent: var(--accent);
+  --mac-accent-hover: var(--accent-hover);
+  --mac-text-primary: var(--text-strong);
+  --mac-text-secondary: var(--text);
+  --mac-bg-gradient: linear-gradient(135deg, rgba(10, 10, 18, 0.9), rgba(10, 10, 15, 0.95));
+  --mac-shadow: var(--shadow-lg);
+  --mac-blur: var(--glass-blur);
+}
+
+/* ===========================================
+   PHASE 2: Body & Root Canvas
+   =========================================== */
+
+body {
+  background: #0a0a0f !important;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 212, 255, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 50%) !important;
+  font-family: var(--font-body) !important;
+  font-size: var(--text-base) !important;
+  line-height: 1.6 !important;
+  letter-spacing: -0.011em !important;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11" !important;
+  font-optical-sizing: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+/* All text inherits the premium font */
+*, *::before, *::after {
+  font-family: inherit;
+}
+
+/* Headings — Plus Jakarta Sans display font */
+h1, h2, h3, h4, h5, h6,
+.page-title,
+.brand-title,
+.stat-value,
+.config-section-card__title,
+.agent-name {
+  font-family: var(--font-display) !important;
+  font-feature-settings: "ss01", "ss02" !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* Body text fine-tuning */
+p, span, label, li, td, th, div {
+  font-family: var(--font-body) !important;
+}
+
+/* Monospace — refined JetBrains Mono */
+code, pre, kbd, samp,
+.log-row,
+.log-message,
+.exec-approval-command,
+.code-block,
+[class*="mono"],
+.cfg-input[type="text"],
+.chat-tool-card {
+  font-family: var(--mono) !important;
+  font-feature-settings: "liga", "calt" !important;
+  font-variant-ligatures: contextual !important;
+}
+
+::selection {
+  background: rgba(0, 212, 255, 0.25) !important;
+  color: #f0f0f8 !important;
+}
+
+/* Scrollbar — Mac Fluid accent style */
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--mac-glass-dark) !important;
+  border-radius: 10px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent) !important;
+  border-radius: 10px !important;
+  transition: background 0.2s ease !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover) !important;
+}
+
+/* ===========================================
+   PHASE 3: Glassmorphism Topbar
+   =========================================== */
+
+.topbar {
+  background: rgba(10, 10, 18, 0.7) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02), 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.brand-title {
+  font-family: var(--font-display) !important;
+  background: var(--gradient-accent) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: 800 !important;
+  font-size: var(--text-lg) !important;
+  letter-spacing: -0.02em !important;
+}
+
+.brand-sub {
+  font-family: var(--font-body) !important;
+  color: var(--muted) !important;
+  letter-spacing: 0.04em !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+}
+
+/* Status pill glass */
+.topbar-status .pill {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: 20px !important;
+}
+
+/* ===========================================
+   PHASE 4: Navigation — Glass Sidebar
+   =========================================== */
+
+.nav {
+  background: rgba(10, 10, 18, 0.5) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+.nav-item {
+  border-radius: var(--radius-md) !important;
+  transition:
+    all 0.2s var(--ease-out) !important;
+  border: 1px solid transparent !important;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.nav-item:active {
+  transform: scale(0.97);
+}
+
+.nav-item.active {
+  background: rgba(0, 212, 255, 0.08) !important;
+  border-color: rgba(0, 212, 255, 0.2) !important;
+  color: #00d4ff !important;
+  box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.05) !important;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 2px;
+  background: var(--gradient-accent);
+  border-radius: 2px;
+  box-shadow: var(--neon-glow-cyan);
+}
+
+.nav-item.active .nav-item__icon {
+  color: #00d4ff !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 4px rgba(0, 212, 255, 0.4));
+}
+
+.nav-label {
+  font-family: var(--font-body) !important;
+  color: var(--muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+}
+
+.nav-item__text {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  letter-spacing: -0.01em !important;
+}
+
+.nav-item.active .nav-item__text {
+  font-weight: 600 !important;
+}
+
+/* ===========================================
+   PHASE 5: Glass Cards
+   =========================================== */
+
+.card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s var(--ease-out) !important;
+}
+
+.card:hover {
+  border-color: rgba(0, 212, 255, 0.15) !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px rgba(0, 212, 255, 0.05) inset,
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(0, 212, 255, 0.05) !important;
+}
+
+/* ===========================================
+   PHASE 6: Stat Cards — Futuristic
+   =========================================== */
+
+.stat {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s var(--ease-out) !important;
+}
+
+.stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 212, 255, 0.12) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 16px rgba(0, 212, 255, 0.05) !important;
+}
+
+.stat:hover::before {
+  opacity: 1;
+}
+
+.stat-value {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: var(--text-2xl) !important;
+  letter-spacing: -0.03em !important;
+  background: linear-gradient(135deg, #f0f0f8, #c8c8d8) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.stat-value.ok {
+  background: linear-gradient(135deg, #00e676, #69f0ae) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.stat-value.warn {
+  background: linear-gradient(135deg, #ffab00, #ffd740) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.stat-label {
+  font-family: var(--font-body) !important;
+  color: var(--muted) !important;
+  letter-spacing: 0.04em !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+}
+
+/* ===========================================
+   PHASE 7: Status Indicators — Neon Glow
+   =========================================== */
+
+.statusDot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #ff3d71 !important;
+  box-shadow: var(--neon-glow-red) !important;
+  animation: neonPulse 2s ease-in-out infinite !important;
+}
+
+.statusDot.ok {
+  background: #00e676 !important;
+  box-shadow: var(--neon-glow-green) !important;
+  animation: neonPulseGreen 3s ease-in-out infinite !important;
+}
+
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 61, 113, 0.4), 0 0 16px rgba(255, 61, 113, 0.1); }
+  50% { box-shadow: 0 0 12px rgba(255, 61, 113, 0.6), 0 0 24px rgba(255, 61, 113, 0.2); }
+}
+
+@keyframes neonPulseGreen {
+  0%, 100% { box-shadow: 0 0 6px rgba(0, 230, 118, 0.3), 0 0 12px rgba(0, 230, 118, 0.1); }
+  50% { box-shadow: 0 0 10px rgba(0, 230, 118, 0.5), 0 0 20px rgba(0, 230, 118, 0.15); }
+}
+
+/* ===========================================
+   PHASE 8: Buttons — Glass with Glow
+   =========================================== */
+
+.btn {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  letter-spacing: -0.01em !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+  transition:
+    all 0.2s var(--ease-out) !important;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97) !important;
+  box-shadow: none !important;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+  border-color: rgba(0, 212, 255, 0.5) !important;
+  color: #0a0a0f !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.25) !important;
+  text-shadow: none !important;
+}
+
+.btn.primary:hover {
+  background: linear-gradient(135deg, #33ddff, #00b8e6) !important;
+  box-shadow: var(--neon-glow-cyan) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn.active {
+  background: rgba(0, 212, 255, 0.1) !important;
+  border-color: rgba(0, 212, 255, 0.3) !important;
+  color: #00d4ff !important;
+}
+
+.btn.danger {
+  background: rgba(255, 61, 113, 0.1) !important;
+  border-color: rgba(255, 61, 113, 0.2) !important;
+  color: #ff3d71 !important;
+}
+
+.btn.danger:hover {
+  background: rgba(255, 61, 113, 0.15) !important;
+  box-shadow: 0 0 12px rgba(255, 61, 113, 0.15) !important;
+}
+
+/* ===========================================
+   PHASE 9: Content Area
+   =========================================== */
+
+.content {
+  background:
+    radial-gradient(ellipse 50% 30% at 50% 0%, rgba(0, 212, 255, 0.02) 0%, transparent 70%),
+    #0a0a0f !important;
+}
+
+.content--chat {
+  background: #0a0a0f !important;
+}
+
+.page-title {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: var(--text-2xl) !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.2 !important;
+  background: linear-gradient(135deg, #f0f0f8 30%, #00d4ff) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.page-sub {
+  font-family: var(--font-body) !important;
+  color: var(--muted) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Smooth page transitions */
+.content > section,
+.content > div {
+  animation: pageSlideIn 0.4s var(--ease-out) backwards;
+}
+
+@keyframes pageSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===========================================
+   PHASE 10: Chat — Premium Experience
+   =========================================== */
+
+.chat-thread {
+  background: transparent !important;
+}
+
+.chat-line {
+  animation: chatMsgIn 0.35s var(--ease-out) backwards;
+}
+
+@keyframes chatMsgIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* User bubble — Cyan glass */
+.chat-line.user .chat-bubble {
+  background: rgba(0, 212, 255, 0.12) !important;
+  border: 1px solid rgba(0, 212, 255, 0.2) !important;
+  border-radius: 16px 16px 4px 16px !important;
+}
+
+/* Assistant bubble — Deep glass */
+.chat-line.assistant .chat-bubble {
+  background: rgba(20, 20, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 16px 16px 16px 4px !important;
+}
+
+/* Streaming pulse — Cyan glow */
+.chat-bubble.streaming {
+  animation: streamGlow 2s ease-in-out infinite !important;
+}
+
+@keyframes streamGlow {
+  0%, 100% { border-color: rgba(0, 212, 255, 0.15); box-shadow: none; }
+  50% { border-color: rgba(0, 212, 255, 0.4); box-shadow: 0 0 20px rgba(0, 212, 255, 0.1); }
+}
+
+/* Chat compose — Glass */
+.chat-compose__field textarea {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-base) !important;
+  line-height: 1.55 !important;
+  letter-spacing: -0.011em !important;
+  background: rgba(14, 14, 24, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.chat-compose__field textarea::placeholder {
+  font-family: var(--font-body) !important;
+  color: rgba(90, 90, 122, 0.6) !important;
+  font-weight: 400 !important;
+}
+
+.chat-compose__field textarea:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow:
+    0 0 0 2px rgba(0, 212, 255, 0.1),
+    0 0 20px rgba(0, 212, 255, 0.08) !important;
+}
+
+.shell--chat .chat-compose {
+  background: linear-gradient(180deg, transparent 0%, rgba(10, 10, 18, 0.95) 30%) !important;
+}
+
+/* Tool cards — Glass */
+.chat-tool-card {
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* Reading indicator dots — Cyan */
+.chat-reading-indicator__dots > span {
+  background: #00d4ff !important;
+}
+
+/* ===========================================
+   PHASE 11: Chips & Pills — Glass Variants
+   =========================================== */
+
+.chip {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-xs) !important;
+  letter-spacing: 0.01em !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s var(--ease-out) !important;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-1px) !important;
+}
+
+.chip-ok {
+  color: #00e676 !important;
+  border-color: rgba(0, 230, 118, 0.2) !important;
+  background: rgba(0, 230, 118, 0.06) !important;
+}
+
+.chip-ok:hover {
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.15) !important;
+}
+
+.chip-warn {
+  color: #ffab00 !important;
+  border-color: rgba(255, 171, 0, 0.2) !important;
+  background: rgba(255, 171, 0, 0.06) !important;
+}
+
+.chip-danger {
+  color: #ff3d71 !important;
+  border-color: rgba(255, 61, 113, 0.2) !important;
+  background: rgba(255, 61, 113, 0.06) !important;
+}
+
+.pill {
+  backdrop-filter: blur(8px) !important;
+  border-radius: 20px !important;
+}
+
+/* ===========================================
+   PHASE 12: Log Stream — Terminal Aesthetic
+   =========================================== */
+
+.log-stream {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  line-height: 1.65 !important;
+  background: rgba(8, 8, 16, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: var(--radius-lg) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.log-row {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+  transition: background 0.15s ease !important;
+  padding: 6px 12px !important;
+}
+
+.log-row:hover {
+  background: rgba(0, 212, 255, 0.03) !important;
+}
+
+.log-level {
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+.log-level.info {
+  color: #448aff !important;
+  border-color: rgba(68, 138, 255, 0.3) !important;
+  background: rgba(68, 138, 255, 0.08) !important;
+}
+
+.log-level.warn {
+  color: #ffab00 !important;
+  border-color: rgba(255, 171, 0, 0.3) !important;
+  background: rgba(255, 171, 0, 0.08) !important;
+}
+
+.log-level.error,
+.log-level.fatal {
+  color: #ff3d71 !important;
+  border-color: rgba(255, 61, 113, 0.3) !important;
+  background: rgba(255, 61, 113, 0.08) !important;
+}
+
+/* ===========================================
+   PHASE 13: Config Page — Complete Premium Overhaul
+   Full-featured configuration editor with glassmorphism
+   =========================================== */
+
+/* --- Layout Container --- */
+.config-layout {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  overflow: hidden !important;
+  background: rgba(10, 10, 18, 0.5) !important;
+  height: calc(100vh - 120px) !important;
+}
+
+/* --- Sidebar --- */
+.config-sidebar {
+  background: rgba(10, 10, 18, 0.7) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+.config-sidebar__header {
+  padding: 18px 18px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.config-sidebar__title {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: var(--text-lg) !important;
+  letter-spacing: -0.02em !important;
+  background: var(--gradient-accent) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.config-sidebar__footer {
+  padding: 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* --- Search --- */
+.config-search {
+  padding: 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.config-search__input {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 400 !important;
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--text) !important;
+  transition: all 0.2s ease !important;
+}
+
+.config-search__input::placeholder {
+  font-family: var(--font-body) !important;
+  color: rgba(90, 90, 122, 0.5) !important;
+}
+
+.config-search__input:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1), 0 0 16px rgba(0, 212, 255, 0.06) !important;
+  background: rgba(18, 18, 30, 0.8) !important;
+}
+
+.config-search__icon {
+  color: rgba(90, 90, 122, 0.6) !important;
+}
+
+.config-search__clear {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: none !important;
+  color: var(--muted) !important;
+  border-radius: 50% !important;
+  transition: all 0.15s ease !important;
+}
+
+.config-search__clear:hover {
+  background: rgba(255, 61, 113, 0.15) !important;
+  color: #ff3d71 !important;
+}
+
+/* --- Navigation Items --- */
+.config-nav {
+  padding: 10px !important;
+  scrollbar-width: thin !important;
+}
+
+.config-nav__item {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 10px 14px !important;
+  gap: 12px !important;
+  border: 1px solid transparent !important;
+  transition: all 0.2s ease !important;
+  min-height: 40px !important;
+}
+
+.config-nav__item:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--text) !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.config-nav__item.active {
+  background: rgba(0, 212, 255, 0.08) !important;
+  color: #00d4ff !important;
+  font-weight: 600 !important;
+  border-color: rgba(0, 212, 255, 0.15) !important;
+  box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.04) !important;
+}
+
+.config-nav__item.active .config-nav__icon {
+  color: #00d4ff !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 4px rgba(0, 212, 255, 0.3)) !important;
+}
+
+.config-nav__icon {
+  opacity: 0.6 !important;
+  transition: all 0.2s ease !important;
+}
+
+.config-nav__item:hover .config-nav__icon {
+  opacity: 0.9 !important;
+}
+
+.config-nav__label {
+  font-family: var(--font-body) !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* --- Main Content Area --- */
+.config-main {
+  background: rgba(10, 10, 18, 0.3) !important;
+}
+
+/* --- Action Bar --- */
+.config-actions {
+  background: rgba(10, 10, 18, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 12px 22px !important;
+  gap: 12px !important;
+}
+
+.config-actions__right .btn {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-xs) !important;
+  padding: 7px 14px !important;
+  min-height: 34px !important;
+}
+
+.config-actions__right .btn.primary {
+  background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+  border-color: rgba(0, 212, 255, 0.5) !important;
+  color: #0a0a0f !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.2) !important;
+}
+
+.config-actions__right .btn.primary:hover:not(:disabled) {
+  box-shadow: var(--neon-glow-cyan) !important;
+}
+
+.config-actions__right .btn:disabled {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+}
+
+.config-changes-badge {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-xs) !important;
+  background: rgba(0, 212, 255, 0.08) !important;
+  border: 1px solid rgba(0, 212, 255, 0.25) !important;
+  color: #00d4ff !important;
+  border-radius: 20px !important;
+  padding: 5px 14px !important;
+  animation: badgePulse 2s ease-in-out infinite !important;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 8px rgba(0, 212, 255, 0.15); }
+}
+
+.config-status {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+}
+
+/* --- Diff Panel --- */
+.config-diff {
+  border: 1px solid rgba(0, 212, 255, 0.15) !important;
+  background: rgba(0, 212, 255, 0.04) !important;
+  border-radius: var(--radius-lg) !important;
+  backdrop-filter: blur(8px) !important;
+  margin: 14px 22px 0 !important;
+}
+
+.config-diff__summary {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  color: #00d4ff !important;
+  padding: 12px 18px !important;
+}
+
+.config-diff__item {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  background: rgba(14, 14, 24, 0.6) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 10px 14px !important;
+}
+
+.config-diff__path {
+  font-weight: 600 !important;
+  color: #00d4ff !important;
+}
+
+.config-diff__from {
+  color: #ff3d71 !important;
+}
+
+.config-diff__to {
+  color: #00e676 !important;
+}
+
+.config-diff__arrow {
+  color: var(--muted) !important;
+}
+
+/* --- Section Hero --- */
+.config-section-hero {
+  background: rgba(10, 10, 18, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 18px 22px !important;
+  gap: 16px !important;
+}
+
+.config-section-hero__icon {
+  color: #00d4ff !important;
+  filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.3)) !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.config-section-hero__title {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: var(--text-lg) !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-strong) !important;
+}
+
+.config-section-hero__desc {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+  line-height: 1.5 !important;
+}
+
+/* --- Subsection Nav (pills) --- */
+.config-subnav {
+  background: rgba(10, 10, 18, 0.4) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 10px 22px 12px !important;
+  gap: 8px !important;
+}
+
+.config-subnav__item {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-xs) !important;
+  letter-spacing: 0 !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid transparent !important;
+  border-radius: 20px !important;
+  padding: 6px 14px !important;
+  color: var(--muted) !important;
+  transition: all 0.2s ease !important;
+}
+
+.config-subnav__item:hover {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text) !important;
+}
+
+.config-subnav__item.active {
+  background: rgba(0, 212, 255, 0.1) !important;
+  border-color: rgba(0, 212, 255, 0.25) !important;
+  color: #00d4ff !important;
+  font-weight: 600 !important;
+}
+
+/* --- Content Area --- */
+.config-content {
+  padding: 22px !important;
+  scroll-behavior: smooth !important;
+}
+
+.config-form--modern {
+  gap: 20px !important;
+}
+
+/* --- Section Cards --- */
+.config-section-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all 0.25s ease !important;
+  overflow: hidden !important;
+}
+
+.config-section-card:hover {
+  border-color: rgba(0, 212, 255, 0.12) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(0, 212, 255, 0.04) !important;
+}
+
+.config-section-card__header {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 18px 22px !important;
+  gap: 14px !important;
+}
+
+.config-section-card__icon {
+  color: #00d4ff !important;
+  filter: drop-shadow(0 0 4px rgba(0, 212, 255, 0.25)) !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.config-section-card__title {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-md) !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-strong) !important;
+}
+
+.config-section-card__desc {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  line-height: 1.5 !important;
+}
+
+.config-section-card__content {
+  padding: 20px 22px !important;
+}
+
+/* --- Form Fields --- */
+.cfg-fields {
+  gap: 18px !important;
+}
+
+.cfg-field {
+  gap: 6px !important;
+}
+
+.cfg-field__label {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+  letter-spacing: -0.005em !important;
+}
+
+.cfg-field__help {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  line-height: 1.5 !important;
+}
+
+.cfg-field__error {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: #ff3d71 !important;
+}
+
+.cfg-field--error {
+  background: rgba(255, 61, 113, 0.06) !important;
+  border: 1px solid rgba(255, 61, 113, 0.2) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 14px !important;
+}
+
+/* --- Text Inputs --- */
+.cfg-input {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 400 !important;
+  color: var(--text) !important;
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 10px 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.cfg-input::placeholder {
+  color: rgba(90, 90, 122, 0.5) !important;
+  font-weight: 400 !important;
+}
+
+.cfg-input:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1), 0 0 16px rgba(0, 212, 255, 0.06) !important;
+  background: rgba(18, 18, 30, 0.8) !important;
+}
+
+.cfg-input--sm {
+  font-size: var(--text-xs) !important;
+  padding: 8px 12px !important;
+}
+
+.cfg-input__reset {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--muted) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cfg-input__reset:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text) !important;
+}
+
+/* --- Textarea --- */
+.cfg-textarea {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  line-height: 1.6 !important;
+  color: var(--text) !important;
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 12px 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.cfg-textarea:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1) !important;
+}
+
+/* --- Select Dropdown --- */
+.cfg-select {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+  background-color: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 10px 40px 10px 14px !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.cfg-select:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1) !important;
+}
+
+/* --- Number Input --- */
+.cfg-number {
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden !important;
+}
+
+.cfg-number__btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--text) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  border: none !important;
+  width: 40px !important;
+  transition: all 0.15s ease !important;
+}
+
+.cfg-number__btn:hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.1) !important;
+  color: #00d4ff !important;
+}
+
+.cfg-number__input {
+  font-family: var(--mono) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+  background: transparent !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* --- Toggle Switches --- */
+.cfg-toggle__track {
+  background: rgba(20, 20, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  width: 48px !important;
+  height: 26px !important;
+}
+
+.cfg-toggle__track::after {
+  background: var(--muted) !important;
+  width: 18px !important;
+  height: 18px !important;
+  top: 3px !important;
+  left: 3px !important;
+  transition: all 0.2s var(--ease-spring) !important;
+}
+
+.cfg-toggle input:checked + .cfg-toggle__track {
+  background: rgba(0, 212, 255, 0.12) !important;
+  border-color: rgba(0, 212, 255, 0.3) !important;
+}
+
+.cfg-toggle input:checked + .cfg-toggle__track::after {
+  background: #00d4ff !important;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.4) !important;
+  transform: translateX(22px) !important;
+}
+
+.cfg-toggle input:focus + .cfg-toggle__track {
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15) !important;
+}
+
+/* --- Toggle Row --- */
+.cfg-toggle-row {
+  font-family: var(--font-body) !important;
+  background: rgba(14, 14, 24, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 14px 18px !important;
+  gap: 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+.cfg-toggle-row:hover:not(.disabled) {
+  background: rgba(20, 20, 36, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.cfg-toggle-row__label {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+}
+
+.cfg-toggle-row__help {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  line-height: 1.5 !important;
+}
+
+/* --- Segmented Control --- */
+.cfg-segmented {
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 3px !important;
+}
+
+.cfg-segmented__btn {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cfg-segmented__btn:hover:not(:disabled):not(.active) {
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.cfg-segmented__btn.active {
+  background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+  color: #0a0a0f !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 6px rgba(0, 212, 255, 0.2) !important;
+}
+
+/* --- Object (Collapsible) --- */
+.cfg-object {
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: var(--radius-lg) !important;
+  background: rgba(14, 14, 24, 0.4) !important;
+  overflow: hidden !important;
+}
+
+.cfg-object__header {
+  padding: 12px 18px !important;
+  transition: background 0.15s ease !important;
+}
+
+.cfg-object__header:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.cfg-object__title {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+}
+
+.cfg-object__chevron {
+  color: var(--muted) !important;
+  transition: transform 0.2s var(--ease-out) !important;
+}
+
+.cfg-object__help {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  padding: 0 18px 12px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.cfg-object__content {
+  padding: 16px 18px !important;
+  gap: 16px !important;
+}
+
+/* --- Array --- */
+.cfg-array {
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
+}
+
+.cfg-array__header {
+  background: rgba(14, 14, 24, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 12px 18px !important;
+}
+
+.cfg-array__label {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+}
+
+.cfg-array__count {
+  font-family: var(--mono) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: #00d4ff !important;
+  background: rgba(0, 212, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 3px 10px !important;
+}
+
+.cfg-array__add {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 500 !important;
+  background: rgba(0, 212, 255, 0.06) !important;
+  border: 1px solid rgba(0, 212, 255, 0.15) !important;
+  color: #00d4ff !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cfg-array__add:hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.12) !important;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.1) !important;
+}
+
+.cfg-array__help {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.cfg-array__empty {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+  padding: 32px 18px !important;
+}
+
+.cfg-array__items {
+  gap: 1px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.cfg-array__item {
+  background: rgba(10, 10, 18, 0.5) !important;
+}
+
+.cfg-array__item-header {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 10px 18px !important;
+}
+
+.cfg-array__item-index {
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: var(--muted) !important;
+  letter-spacing: 0.06em !important;
+}
+
+.cfg-array__item-remove {
+  color: var(--muted) !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all 0.15s ease !important;
+}
+
+.cfg-array__item-remove:hover:not(:disabled) {
+  background: rgba(255, 61, 113, 0.1) !important;
+  color: #ff3d71 !important;
+}
+
+.cfg-array__item-content {
+  padding: 16px 18px !important;
+}
+
+/* --- Map --- */
+.cfg-map {
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
+}
+
+.cfg-map__header {
+  background: rgba(14, 14, 24, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.cfg-map__label {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+}
+
+.cfg-map__add {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  background: rgba(0, 212, 255, 0.06) !important;
+  border: 1px solid rgba(0, 212, 255, 0.15) !important;
+  color: #00d4ff !important;
+  transition: all 0.2s ease !important;
+}
+
+.cfg-map__add:hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.12) !important;
+}
+
+.cfg-map__empty {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+}
+
+.cfg-map__item-remove:hover:not(:disabled) {
+  background: rgba(255, 61, 113, 0.1) !important;
+  color: #ff3d71 !important;
+}
+
+/* --- Mode Toggle --- */
+.config-mode-toggle {
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 3px !important;
+}
+
+.config-mode-toggle__btn {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.config-mode-toggle__btn:hover:not(.active) {
+  color: var(--text) !important;
+}
+
+.config-mode-toggle__btn.active {
+  background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+  color: #0a0a0f !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 6px rgba(0, 212, 255, 0.2) !important;
+}
+
+/* --- Raw JSON5 Editor --- */
+.config-raw-field textarea {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  line-height: 1.65 !important;
+  color: var(--text) !important;
+  background: rgba(6, 6, 12, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 16px !important;
+  min-height: 500px !important;
+  resize: vertical !important;
+  tab-size: 2 !important;
+}
+
+.config-raw-field textarea:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1) !important;
+}
+
+.config-raw-field > span {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+}
+
+/* --- Loading State --- */
+.config-loading {
+  font-family: var(--font-body) !important;
+  color: var(--muted) !important;
+}
+
+.config-loading__spinner {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-top-color: #00d4ff !important;
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* --- Empty State --- */
+.config-empty {
+  font-family: var(--font-body) !important;
+}
+
+.config-empty__text {
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+}
+
+/* --- Validity Pills --- */
+.pill--sm {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  padding: 4px 10px !important;
+  border-radius: 12px !important;
+}
+
+.pill--ok {
+  color: #00e676 !important;
+  border-color: rgba(0, 230, 118, 0.3) !important;
+  background: rgba(0, 230, 118, 0.06) !important;
+}
+
+.pill--danger {
+  color: #ff3d71 !important;
+  border-color: rgba(255, 61, 113, 0.3) !important;
+  background: rgba(255, 61, 113, 0.06) !important;
+}
+
+/* --- Config Mobile Responsive --- */
+@media (max-width: 768px) {
+  .config-layout {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: calc(100vh - 160px) !important;
+  }
+
+  .config-sidebar {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .config-sidebar__header {
+    padding: 14px 16px !important;
+  }
+
+  .config-nav {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    padding: 10px 14px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .config-nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .config-nav__item {
+    flex: 0 0 auto !important;
+    padding: 8px 14px !important;
+    white-space: nowrap !important;
+    min-height: 36px !important;
+  }
+
+  .config-sidebar__footer {
+    display: none !important;
+  }
+
+  .config-actions {
+    flex-wrap: wrap !important;
+    padding: 12px 16px !important;
+  }
+
+  .config-actions__left,
+  .config-actions__right {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .config-section-hero {
+    padding: 14px 16px !important;
+  }
+
+  .config-section-hero__title {
+    font-size: var(--text-md) !important;
+  }
+
+  .config-subnav {
+    padding: 10px 16px !important;
+    scrollbar-width: none !important;
+  }
+
+  .config-subnav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .config-content {
+    padding: 16px !important;
+  }
+
+  .config-section-card__header {
+    padding: 14px 16px !important;
+  }
+
+  .config-section-card__content {
+    padding: 16px !important;
+  }
+
+  .cfg-segmented {
+    flex-wrap: wrap !important;
+  }
+
+  .cfg-segmented__btn {
+    flex: 1 0 auto !important;
+    min-width: 60px !important;
+  }
+
+  .cfg-map__item {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .config-nav__label {
+    display: none !important;
+  }
+
+  .config-nav__icon {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .config-section-card__title {
+    font-size: var(--text-sm) !important;
+  }
+}
+
+/* ===========================================
+   PHASE 14: Lists & Tables — Glass Rows
+   =========================================== */
+
+.list-item {
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.25s ease !important;
+}
+
+.list-item-clickable:hover {
+  border-color: rgba(0, 212, 255, 0.12) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+.list-item-clickable:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.list-item-selected {
+  border-color: rgba(0, 212, 255, 0.3) !important;
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.15), 0 0 16px rgba(0, 212, 255, 0.05) !important;
+}
+
+.table-row {
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s ease !important;
+}
+
+.table-row:hover {
+  border-color: rgba(0, 212, 255, 0.1) !important;
+  background: rgba(0, 212, 255, 0.03) !important;
+}
+
+/* ===========================================
+   PHASE 15: Cron Jobs — Complete Redesign
+   Futuristic scheduler dashboard with live activity
+   =========================================== */
+
+/* --- Cron Page Grid Layout --- */
+.grid.grid-cols-2 {
+  gap: 16px !important;
+}
+
+/* --- Scheduler Status & New Job Cards --- */
+.card {
+  font-family: var(--font-body) !important;
+}
+
+.card-title {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: var(--text-lg) !important;
+  letter-spacing: -0.025em !important;
+  color: var(--text-strong) !important;
+}
+
+.card-sub {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+  line-height: 1.5 !important;
+}
+
+/* --- Stat Grid (Scheduler metrics) --- */
+.stat-grid {
+  gap: 12px !important;
+}
+
+.stat-grid .stat {
+  position: relative !important;
+  padding: 16px 18px !important;
+  background: rgba(14, 14, 24, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: var(--radius-lg) !important;
+  backdrop-filter: blur(12px) !important;
+  overflow: hidden !important;
+}
+
+.stat-grid .stat::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 2px !important;
+  background: var(--gradient-accent) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.stat-grid .stat:hover::before {
+  opacity: 1 !important;
+}
+
+.stat-grid .stat:hover {
+  border-color: rgba(0, 212, 255, 0.12) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 212, 255, 0.04) !important;
+}
+
+/* --- Cron Job List Items --- */
+.cron-job {
+  position: relative !important;
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(16px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transition: all 0.25s var(--ease-out) !important;
+}
+
+.cron-job:hover {
+  border-color: rgba(0, 212, 255, 0.15) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(0, 212, 255, 0.05) !important;
+  transform: translateY(-2px) !important;
+}
+
+.cron-job:active {
+  transform: translateY(0) !important;
+}
+
+.cron-job.list-item-selected {
+  border-color: rgba(0, 212, 255, 0.3) !important;
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.15), 0 0 24px rgba(0, 212, 255, 0.08) !important;
+  background: rgba(0, 212, 255, 0.03) !important;
+}
+
+/* --- Selected indicator bar --- */
+.cron-job.list-item-selected::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 3px !important;
+  background: var(--gradient-accent) !important;
+  border-radius: 0 2px 2px 0 !important;
+  box-shadow: var(--neon-glow-cyan) !important;
+}
+
+/* --- Job Title --- */
+.cron-job .list-title {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-md) !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-strong) !important;
+}
+
+/* --- Job Schedule Subtitle --- */
+.cron-job .list-sub {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* --- Job Main Content --- */
+.cron-job .list-main {
+  padding: 16px 18px 8px !important;
+}
+
+/* --- Job Meta (Right Side State) --- */
+.cron-job .list-meta {
+  padding: 16px 18px 8px !important;
+}
+
+/* --- Payload Details --- */
+.cron-job-detail {
+  gap: 4px !important;
+  margin-top: 6px !important;
+}
+
+.cron-job-detail-label {
+  font-family: var(--font-body) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #00d4ff !important;
+  opacity: 0.7 !important;
+}
+
+.cron-job-detail-value {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  line-height: 1.45 !important;
+}
+
+/* --- Agent ID --- */
+.cron-job-agent {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  opacity: 0.7 !important;
+  margin-top: 4px !important;
+}
+
+/* --- Job State Display (Right Column) --- */
+.cron-job-state {
+  gap: 6px !important;
+}
+
+.cron-job-state-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: baseline !important;
+  gap: 12px !important;
+}
+
+.cron-job-state-key {
+  font-family: var(--font-body) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--muted) !important;
+}
+
+.cron-job-state-value {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--text) !important;
+}
+
+/* --- Status Pills --- */
+.cron-job-status-pill {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.04em !important;
+  padding: 3px 10px !important;
+  border-radius: 12px !important;
+  border: 1px solid transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+.cron-job-status-ok {
+  color: #00e676 !important;
+  border-color: rgba(0, 230, 118, 0.3) !important;
+  background: rgba(0, 230, 118, 0.1) !important;
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.12) !important;
+  animation: cronPulseGreen 3s ease-in-out infinite !important;
+}
+
+@keyframes cronPulseGreen {
+  0%, 100% { box-shadow: 0 0 4px rgba(0, 230, 118, 0.08); }
+  50% { box-shadow: 0 0 12px rgba(0, 230, 118, 0.2), 0 0 4px rgba(0, 230, 118, 0.15); }
+}
+
+.cron-job-status-error {
+  color: #ff3d71 !important;
+  border-color: rgba(255, 61, 113, 0.3) !important;
+  background: rgba(255, 61, 113, 0.1) !important;
+  box-shadow: 0 0 8px rgba(255, 61, 113, 0.12) !important;
+  animation: cronPulseRed 2s ease-in-out infinite !important;
+}
+
+@keyframes cronPulseRed {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 61, 113, 0.08); }
+  50% { box-shadow: 0 0 12px rgba(255, 61, 113, 0.2), 0 0 4px rgba(255, 61, 113, 0.15); }
+}
+
+.cron-job-status-skipped {
+  color: #ffab00 !important;
+  border-color: rgba(255, 171, 0, 0.3) !important;
+  background: rgba(255, 171, 0, 0.1) !important;
+  box-shadow: 0 0 6px rgba(255, 171, 0, 0.08) !important;
+}
+
+.cron-job-status-na {
+  color: var(--muted) !important;
+  opacity: 0.6 !important;
+}
+
+/* --- Job Footer (Chips + Actions) --- */
+.cron-job-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+  padding: 10px 18px !important;
+  gap: 10px !important;
+}
+
+/* --- Job Chips --- */
+.cron-job-chips {
+  gap: 6px !important;
+}
+
+.cron-job-chips .chip {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.02em !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(4px) !important;
+  transition: all 0.15s ease !important;
+}
+
+.cron-job-chips .chip.chip-ok {
+  color: #00e676 !important;
+  background: rgba(0, 230, 118, 0.06) !important;
+  border-color: rgba(0, 230, 118, 0.15) !important;
+}
+
+.cron-job-chips .chip.chip-danger {
+  color: #ff3d71 !important;
+  background: rgba(255, 61, 113, 0.06) !important;
+  border-color: rgba(255, 61, 113, 0.15) !important;
+}
+
+/* --- Job Action Buttons --- */
+.cron-job-actions {
+  gap: 6px !important;
+}
+
+.cron-job-actions .btn {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  padding: 5px 12px !important;
+  min-height: 30px !important;
+  border-radius: var(--radius-sm) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--text) !important;
+  backdrop-filter: blur(4px) !important;
+  transition: all 0.15s ease !important;
+}
+
+.cron-job-actions .btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.cron-job-actions .btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97) !important;
+}
+
+/* Run button — Cyan accent */
+.cron-job-actions .btn:nth-child(2) {
+  background: rgba(0, 212, 255, 0.06) !important;
+  border-color: rgba(0, 212, 255, 0.15) !important;
+  color: #00d4ff !important;
+}
+
+.cron-job-actions .btn:nth-child(2):hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.12) !important;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.1) !important;
+}
+
+/* Remove button — Danger */
+.cron-job-actions .btn.danger {
+  background: rgba(255, 61, 113, 0.06) !important;
+  border-color: rgba(255, 61, 113, 0.15) !important;
+  color: #ff3d71 !important;
+}
+
+.cron-job-actions .btn.danger:hover:not(:disabled) {
+  background: rgba(255, 61, 113, 0.12) !important;
+  box-shadow: 0 0 10px rgba(255, 61, 113, 0.1) !important;
+}
+
+/* --- New Job Form --- */
+.form-grid {
+  gap: 12px !important;
+}
+
+.form-grid .field {
+  gap: 5px !important;
+}
+
+.form-grid .field span {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  letter-spacing: 0 !important;
+}
+
+.form-grid .field input,
+.form-grid .field textarea,
+.form-grid .field select {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text) !important;
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 9px 12px !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-grid .field input::placeholder,
+.form-grid .field textarea::placeholder {
+  color: rgba(90, 90, 122, 0.5) !important;
+}
+
+.form-grid .field input:focus,
+.form-grid .field textarea:focus,
+.form-grid .field select:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1), 0 0 12px rgba(0, 212, 255, 0.05) !important;
+  background: rgba(18, 18, 30, 0.8) !important;
+  outline: none !important;
+}
+
+.form-grid .field textarea {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  line-height: 1.6 !important;
+  resize: vertical !important;
+}
+
+.form-grid .field select {
+  cursor: pointer !important;
+  appearance: none !important;
+  padding-right: 36px !important;
+}
+
+.form-grid .field input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: #00d4ff !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+}
+
+/* Add job button */
+.form-grid + .row .btn.primary,
+.card > .row .btn.primary {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+  background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+  border: 1px solid rgba(0, 212, 255, 0.5) !important;
+  color: #0a0a0f !important;
+  padding: 9px 20px !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-grid + .row .btn.primary:hover,
+.card > .row .btn.primary:hover {
+  box-shadow: var(--neon-glow-cyan) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* --- Run History Section --- */
+.list .list-item:not(.cron-job) {
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.2s ease !important;
+}
+
+.list .list-item:not(.cron-job):hover {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Run history status titles */
+.list .list-item:not(.cron-job) .list-title {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-sm) !important;
+}
+
+.list .list-item:not(.cron-job) .list-sub {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  line-height: 1.5 !important;
+}
+
+.list .list-item:not(.cron-job) .list-meta {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+}
+
+/* Session link in run history */
+.session-link {
+  font-family: var(--font-body) !important;
+  color: #00d4ff !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3) !important;
+  transition: border-color 0.15s ease !important;
+  font-size: var(--text-xs) !important;
+}
+
+.session-link:hover {
+  border-bottom-color: #00d4ff !important;
+  color: #33ddff !important;
+}
+
+/* --- Cron Page Mobile Responsive --- */
+@media (max-width: 768px) {
+  .grid.grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@container (max-width: 560px) {
+  .cron-job .list-main {
+    padding: 14px 14px 6px !important;
+  }
+
+  .cron-job .list-meta {
+    padding: 6px 14px !important;
+  }
+
+  .cron-job-footer {
+    padding: 10px 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .cron-job-actions {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .cron-job-actions .btn {
+    flex: 1 0 auto !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+}
+
+/* ===========================================
+   PHASE 16: Agent Cards — Premium
+   =========================================== */
+
+.agent-row {
+  background: var(--glass-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.25s ease !important;
+}
+
+.agent-row:hover {
+  border-color: rgba(0, 212, 255, 0.12) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+.agent-row:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.agent-row.active {
+  border-color: rgba(0, 212, 255, 0.3) !important;
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.15), 0 0 20px rgba(0, 212, 255, 0.05) !important;
+  background: rgba(0, 212, 255, 0.04) !important;
+}
+
+.agent-avatar {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(168, 85, 247, 0.2)) !important;
+  border: 1px solid rgba(0, 212, 255, 0.15);
+}
+
+.agent-tab.active {
+  background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+  border-color: rgba(0, 212, 255, 0.5) !important;
+  color: #0a0a0f !important;
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.2) !important;
+}
+
+/* ===========================================
+   PHASE 17: Theme Toggle — Glass
+   =========================================== */
+
+.theme-toggle__track {
+  background: rgba(20, 20, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.theme-toggle__indicator {
+  background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.3) !important;
+}
+
+.theme-toggle__button.active {
+  color: #0a0a0f !important;
+}
+
+/* ===========================================
+   PHASE 18: Form Fields — Glass Inputs
+   =========================================== */
+
+.field input,
+.field textarea,
+.field select {
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1), 0 0 16px rgba(0, 212, 255, 0.05) !important;
+}
+
+/* ===========================================
+   PHASE 19: Callouts — Glass Variants
+   =========================================== */
+
+.callout {
+  background: rgba(14, 14, 24, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.callout.danger {
+  border-color: rgba(255, 61, 113, 0.2) !important;
+  background: rgba(255, 61, 113, 0.06) !important;
+}
+
+.callout.info {
+  border-color: rgba(68, 138, 255, 0.2) !important;
+  background: rgba(68, 138, 255, 0.06) !important;
+}
+
+.callout.success {
+  border-color: rgba(0, 230, 118, 0.2) !important;
+  background: rgba(0, 230, 118, 0.06) !important;
+}
+
+/* ===========================================
+   PHASE 20: Code Blocks — Deep Terminal
+   =========================================== */
+
+.code-block {
+  background: rgba(6, 6, 12, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+/* ===========================================
+   PHASE 21: Exec Approval — Glass Modal
+   =========================================== */
+
+.exec-approval-overlay {
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.exec-approval-card {
+  background: rgba(14, 14, 24, 0.9) !important;
+  border: 1px solid rgba(0, 212, 255, 0.15) !important;
+  backdrop-filter: blur(20px) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), var(--neon-glow-cyan) !important;
+}
+
+.exec-approval-command {
+  background: rgba(6, 6, 12, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ===========================================
+   PHASE 22: QR Code — Glass Card
+   =========================================== */
+
+.qr-wrap {
+  background: rgba(14, 14, 24, 0.6) !important;
+  border: 1px dashed rgba(0, 212, 255, 0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+/* ===========================================
+   PHASE 23: Focus/Accessibility — Cyan Ring
+   =========================================== */
+
+:focus-visible {
+  outline: none !important;
+  box-shadow:
+    0 0 0 2px rgba(10, 10, 18, 0.8),
+    0 0 0 3px rgba(0, 212, 255, 0.6),
+    0 0 16px rgba(0, 212, 255, 0.1) !important;
+}
+
+/* ===========================================
+   PHASE 24: Link Styles
+   =========================================== */
+
+a {
+  color: #00d4ff !important;
+}
+
+a:hover {
+  color: #33ddff !important;
+}
+
+.session-link {
+  color: #00d4ff !important;
+}
+
+/* ===========================================
+   PHASE 25: Compaction Indicator — Glass
+   =========================================== */
+
+.compaction-indicator {
+  background: rgba(14, 14, 24, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.compaction-indicator--active {
+  color: #448aff !important;
+  border-color: rgba(68, 138, 255, 0.3) !important;
+}
+
+.compaction-indicator--complete {
+  color: #00e676 !important;
+  border-color: rgba(0, 230, 118, 0.3) !important;
+}
+
+/* ===========================================
+   PHASE 27: Agents Overview — Glass Grid
+   =========================================== */
+
+.agents-layout {
+  gap: 20px !important;
+}
+
+.agent-files-editor {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.agent-file-row {
+  background: rgba(14, 14, 24, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.2s ease !important;
+}
+
+.agent-file-row:hover {
+  border-color: rgba(0, 212, 255, 0.1) !important;
+}
+
+.agent-file-row.active {
+  border-color: rgba(0, 212, 255, 0.25) !important;
+  background: rgba(0, 212, 255, 0.04) !important;
+}
+
+.agent-tools-section {
+  background: rgba(14, 14, 24, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.agent-tool-row {
+  background: rgba(14, 14, 24, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+/* ===========================================
+   PHASE 28: Skills — Glass Cards
+   =========================================== */
+
+.agent-skills-header {
+  color: var(--muted) !important;
+}
+
+.agent-skill-row {
+  background: var(--glass-bg) !important;
+}
+
+/* ===========================================
+   PHASE 31: Mobile Bottom Tab Bar
+   =========================================== */
+
+@media (max-width: 600px) {
+  .shell {
+    grid-template-rows: var(--shell-topbar-height) 1fr auto !important;
+    grid-template-areas:
+      "topbar"
+      "content"
+      "nav" !important;
+  }
+
+  .nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 50 !important;
+    background: rgba(10, 10, 18, 0.85) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border-bottom: none !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    gap: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .nav-item {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    padding: 4px 2px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    border-radius: var(--radius-md) !important;
+    font-size: 10px !important;
+    border: none !important;
+  }
+
+  .nav-item.active::before {
+    display: none;
+  }
+
+  .nav-item__icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .nav-item__icon svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .nav-item__text {
+    font-family: var(--font-body) !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.01em !important;
+    max-width: 56px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav-label,
+  .nav-group--links,
+  .nav-collapse-toggle {
+    display: none !important;
+  }
+
+  .nav-group,
+  .nav-group__items,
+  .nav-group--collapsed .nav-group__items {
+    display: contents !important;
+  }
+
+  .content {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .content-header {
+    display: flex !important;
+    padding: 8px 4px !important;
+  }
+
+  .page-title {
+    font-family: var(--font-display) !important;
+    font-size: var(--text-xl) !important;
+    font-weight: 700 !important;
+  }
+
+  .topbar {
+    padding: 8px 12px !important;
+    min-height: 48px !important;
+  }
+
+  .shell--chat .chat-compose {
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .chat-thread {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .exec-approval-overlay {
+    padding: 12px !important;
+    align-items: flex-end !important;
+  }
+
+  .exec-approval-card {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 601px) {
+  .nav {
+    background: rgba(10, 10, 18, 0.8) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+}
+
+/* ===========================================
+   PHASE 32: Animated Gradient Border on Shell
+   =========================================== */
+
+@keyframes borderShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===========================================
+   PHASE 33: UX & Usability Enhancements
+   Better spacing, touch targets, readability
+   =========================================== */
+
+/* --- Tooltip styling --- */
+[data-tooltip],
+[title] {
+  position: relative;
+}
+
+/* --- Better empty states --- */
+.empty-state {
+  font-family: var(--font-body) !important;
+  text-align: center !important;
+  padding: 48px 24px !important;
+}
+
+.empty-state__title {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-xl) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--text-strong) !important;
+  margin-bottom: 8px !important;
+}
+
+.empty-state__desc {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+  line-height: 1.6 !important;
+  max-width: 360px !important;
+  margin: 0 auto !important;
+}
+
+/* --- Better table headers --- */
+.table-header,
+th {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-xs) !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: var(--muted) !important;
+}
+
+/* --- Status badges --- */
+.status-badge,
+.badge {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+}
+
+/* --- Agent name styling --- */
+.agent-name {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  font-size: var(--text-md) !important;
+  letter-spacing: -0.02em !important;
+}
+
+.agent-model {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  font-weight: 400 !important;
+}
+
+/* --- Chat message text refinement --- */
+.chat-bubble {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-base) !important;
+  line-height: 1.65 !important;
+  letter-spacing: -0.011em !important;
+}
+
+.chat-bubble code {
+  font-family: var(--mono) !important;
+  font-size: 0.85em !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  background: rgba(0, 212, 255, 0.08) !important;
+  border: 1px solid rgba(0, 212, 255, 0.12) !important;
+}
+
+.chat-bubble pre {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  line-height: 1.7 !important;
+  padding: 14px 16px !important;
+  border-radius: var(--radius-md) !important;
+  background: rgba(6, 6, 12, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  overflow-x: auto !important;
+}
+
+.chat-bubble h1, .chat-bubble h2, .chat-bubble h3,
+.chat-bubble h4, .chat-bubble h5, .chat-bubble h6 {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.3 !important;
+  margin: 1.2em 0 0.5em !important;
+}
+
+.chat-bubble h1 { font-size: var(--text-xl) !important; }
+.chat-bubble h2 { font-size: var(--text-lg) !important; }
+.chat-bubble h3 { font-size: var(--text-md) !important; }
+
+.chat-bubble p {
+  margin: 0.6em 0 !important;
+}
+
+.chat-bubble ul, .chat-bubble ol {
+  padding-left: 1.5em !important;
+  margin: 0.5em 0 !important;
+}
+
+.chat-bubble li {
+  margin: 0.25em 0 !important;
+  line-height: 1.6 !important;
+}
+
+.chat-bubble a {
+  color: #00d4ff !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3) !important;
+  transition: border-color 0.15s ease !important;
+}
+
+.chat-bubble a:hover {
+  border-bottom-color: #00d4ff !important;
+}
+
+/* --- Timestamp and meta text --- */
+.chat-ts,
+.chat-meta,
+.timestamp,
+.time-ago,
+.meta-text {
+  font-family: var(--font-body) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--muted) !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* --- Config mode toggle labels --- */
+.config-mode-toggle__btn {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+  letter-spacing: -0.005em !important;
+}
+
+/* --- Session list --- */
+.session-item__title {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.session-item__preview {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--muted) !important;
+  line-height: 1.4 !important;
+}
+
+/* --- Config diff code --- */
+.config-diff pre,
+.config-diff code {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+}
+
+/* --- Exec approval card --- */
+.exec-approval-card__title {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: var(--text-lg) !important;
+  letter-spacing: -0.02em !important;
+}
+
+.exec-approval-command {
+  font-family: var(--mono) !important;
+  font-size: var(--text-sm) !important;
+  line-height: 1.6 !important;
+}
+
+/* --- Config search --- */
+.config-search__input {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+}
+
+/* --- Toggle row labels --- */
+.cfg-toggle-row__label {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+}
+
+.cfg-toggle-row__desc {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+  line-height: 1.5 !important;
+}
+
+/* --- Segmented control --- */
+.cfg-segmented__btn {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: var(--text-sm) !important;
+}
+
+/* --- Skills card text --- */
+.agent-skill-name {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+}
+
+.agent-skill-desc {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+}
+
+/* --- Better touch targets for interactive elements --- */
+.nav-item,
+.btn,
+.chip,
+.config-nav__item,
+.cfg-toggle-row,
+.list-item-clickable,
+.agent-row,
+.agent-tab {
+  min-height: 36px !important;
+}
+
+/* --- Smooth content scrolling --- */
+.content,
+.chat-thread,
+.config-content,
+.log-stream {
+  scroll-behavior: smooth !important;
+}
+
+/* --- Better code block in config --- */
+.cfg-code {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  line-height: 1.6 !important;
+  letter-spacing: 0 !important;
+}
+
+/* --- Breadcrumb / path display --- */
+.path-display,
+.breadcrumb {
+  font-family: var(--mono) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--muted) !important;
+}
+
+/* --- Loading / skeleton text shimmer --- */
+@keyframes textShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.loading-text,
+.skeleton-text {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(0, 212, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  ) !important;
+  background-size: 200% auto !important;
+  animation: textShimmer 2s linear infinite !important;
+  border-radius: 4px !important;
+}
+
+/* --- Section dividers --- */
+.config-section-card + .config-section-card {
+  margin-top: 12px !important;
+}
+
+/* --- Refined spacing for content areas --- */
+.content-body {
+  padding: 20px 24px !important;
+}
+
+.content-header {
+  padding: 20px 24px 12px !important;
+}
+
+/* ===========================================
+   PHASE 35: Mac Fluid Modernization
+   Utility classes, animations & enhanced interactivity
+   =========================================== */
+
+/* --- Fluid Glow Animation --- */
+@keyframes fluidGlow {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.fluid-glow {
+  animation: fluidGlow 3s ease-in-out infinite !important;
+}
+
+/* --- Spin Animation (loading) --- */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  border: 3px solid var(--glass-bg) !important;
+  border-top: 3px solid var(--accent) !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  animation: spin 1s linear infinite !important;
+}
+
+.loading-spinner--sm {
+  width: 20px !important;
+  height: 20px !important;
+  border-width: 2px !important;
+}
+
+/* --- Hover Lift Utility --- */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+}
+
+/* --- Card Hover Enhancement (Mac Fluid style) --- */
+.card:hover,
+.panel:hover,
+[class*="card"]:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06) !important;
+}
+
+/* --- Claw Marks Decoration (OpenClaw branding) --- */
+.claw-mark {
+  position: absolute !important;
+  width: 40px !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) !important;
+  border-radius: 2px !important;
+  opacity: 0.6 !important;
+  pointer-events: none !important;
+}
+
+.claw-mark--vertical {
+  width: 4px !important;
+  height: 40px !important;
+  background: linear-gradient(180deg, transparent, var(--accent), transparent) !important;
+}
+
+/* --- Enhanced Button Hover (Mac Fluid lift) --- */
+button:hover,
+.btn:hover,
+[class*="button"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px rgba(0, 212, 255, 0.15) !important;
+}
+
+/* --- Input Focus Enhancement (Mac Fluid ring) --- */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1) !important;
+}
+
+/* --- Fluid Container Border Animation --- */
+@keyframes fluidBorder {
+  0% { border-color: rgba(0, 212, 255, 0.15); }
+  50% { border-color: rgba(168, 85, 247, 0.15); }
+  100% { border-color: rgba(0, 212, 255, 0.15); }
+}
+
+.fluid-border {
+  animation: fluidBorder 4s ease-in-out infinite !important;
+}
+
+/* --- Pulse Dot (status indicator) --- */
+@keyframes pulseDot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 230, 118, 0); }
+}
+
+.pulse-online {
+  animation: pulseDot 2s ease-in-out infinite !important;
+}
+
+/* ===========================================
+   PHASE 36: Reduced Motion
+   =========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===========================================
+   PHASE 37: Print
+   =========================================== */
+
+@media print {
+  .topbar, .nav, .chat-compose { display: none !important; }
+  .shell { display: block !important; }
+  .content { padding: 0 !important; overflow: visible !important; }
+  body { background: white !important; color: black !important; }
+}
