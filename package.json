@@ -1,7 +1,8 @@
 {
-  "name": "openclawapp",
-  "version": "4.1.0",
-  "description": "OpenClaw Dashboard - Mac Fluid Modernization Theme",
+  "name": "openclaw-mac-fluid",
+  "version": "1.0.0",
+  "description": "OpenClaw Dashboard with Mac Fluid Design",
+  "main": "main.js",
   "author": "Bernard Materu",
   "license": "MIT",
   "repository": {
@@ -11,6 +12,7 @@
   "keywords": [
     "openclaw",
     "dashboard",
+    "electron",
     "theme",
     "glassmorphism",
     "dark-theme",
@@ -18,6 +20,41 @@
     "css"
   ],
   "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
     "apply": "bash scripts/apply.sh"
+  },
+  "build": {
+    "appId": "com.openclaw.mac",
+    "productName": "OpenClaw",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "preferences.html",
+      "package.json",
+      "build/**/*",
+      "css/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "darkModeSupport": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
   }
 }

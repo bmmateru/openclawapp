@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>OpenClaw</title>
+  <meta name="color-scheme" content="dark" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0a0a0f;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: #c8c8d8;
+    }
+
+    /* Draggable titlebar region for macOS hiddenInset */
+    .titlebar {
+      -webkit-app-region: drag;
+      height: 38px;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      background: transparent;
+    }
+
+    /* Main container fills entire viewport below titlebar */
+    .app-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Iframe fills everything */
+    .dashboard-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: #0a0a0f;
+    }
+
+    /* Connection screen when gateway is not running */
+    .connection-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 212, 255, 0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
+        #0a0a0f;
+      text-align: center;
+    }
+
+    .connection-screen.hidden {
+      display: none;
+    }
+
+    .logo-glow {
+      width: 100px;
+      height: 100px;
+      border-radius: 28px;
+      background: rgba(14, 14, 24, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px) saturate(180%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 0 40px rgba(0, 212, 255, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(0, 212, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.02) inset; }
+      50% { box-shadow: 0 0 50px rgba(0, 212, 255, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.04) inset; }
+    }
+
+    .logo-glow svg {
+      width: 52px;
+      height: 52px;
+    }
+
+    .app-title {
+      font-family: "Plus Jakarta Sans", "Inter", -apple-system, system-ui, sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #00d4ff, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .app-subtitle {
+      font-size: 15px;
+      color: #5a5a7a;
+      font-weight: 400;
+      line-height: 1.5;
+      max-width: 420px;
+    }
+
+    .status-card {
+      background: rgba(14, 14, 24, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px) saturate(150%);
+      border-radius: 14px;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      min-width: 360px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff3d71;
+      box-shadow: 0 0 12px rgba(255, 61, 113, 0.4);
+      animation: neonPulseRed 2s ease-in-out infinite;
+    }
+
+    .status-dot.ok {
+      background: #00e676;
+      box-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
+      animation: neonPulseGreen 3s ease-in-out infinite;
+    }
+
+    @keyframes neonPulseRed {
+      0%, 100% { box-shadow: 0 0 8px rgba(255, 61, 113, 0.4); }
+      50% { box-shadow: 0 0 16px rgba(255, 61, 113, 0.6); }
+    }
+
+    @keyframes neonPulseGreen {
+      0%, 100% { box-shadow: 0 0 6px rgba(0, 230, 118, 0.3); }
+      50% { box-shadow: 0 0 14px rgba(0, 230, 118, 0.5); }
+    }
+
+    .status-label {
+      color: #c8c8d8;
+    }
+
+    .status-label.error {
+      color: #ff3d71;
+    }
+
+    .status-label.ok {
+      color: #00e676;
+    }
+
+    .retry-btn {
+      font-family: "Inter", -apple-system, system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      border: 1px solid rgba(0, 212, 255, 0.5);
+      color: #0a0a0f;
+      border-radius: 10px;
+      padding: 10px 28px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.25);
+    }
+
+    .retry-btn:hover {
+      background: linear-gradient(135deg, #33ddff, #00b8e6);
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .retry-btn:active {
+      transform: translateY(0) scale(0.97);
+      box-shadow: none;
+    }
+
+    .hint-text {
+      font-size: 12px;
+      color: #44446a;
+      font-family: "JetBrains Mono", "SF Mono", monospace;
+    }
+
+    .hint-text code {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: #00d4ff;
+    }
+
+    /* Spinner for connecting state */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgba(255, 255, 255, 0.06);
+      border-top-color: #00d4ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="titlebar"></div>
+
+  <div class="app-container">
+    <!-- Connection screen shown when gateway is offline -->
+    <div class="connection-screen" id="connectionScreen">
+      <div class="logo-glow">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4z" fill="none" stroke="url(#grad)" stroke-width="2"/>
+          <path d="M16 18c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H18c-1.1 0-2-.9-2-2V18z" fill="none" stroke="url(#grad)" stroke-width="1.5"/>
+          <circle cx="21" cy="23" r="2" fill="#00d4ff"/>
+          <circle cx="27" cy="23" r="2" fill="#a855f7"/>
+          <path d="M20 28s1.5 2 4 2 4-2 4-2" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="grad" x1="4" y1="4" x2="44" y2="44">
+              <stop stop-color="#00d4ff"/>
+              <stop offset="1" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <h1 class="app-title">OpenClaw</h1>
+      <p class="app-subtitle">Mac Fluid Edition. Connecting to the OpenClaw gateway dashboard.</p>
+
+      <div class="status-card">
+        <div class="status-row">
+          <div class="spinner" id="statusSpinner"></div>
+          <span class="status-label" id="statusLabel">Connecting to gateway...</span>
+        </div>
+        <button class="retry-btn" id="retryBtn" style="display: none;" onclick="connectToGateway()">Retry Connection</button>
+      </div>
+
+      <p class="hint-text">Gateway not running? Start it with <code>openclaw gateway install</code></p>
+    </div>
+
+    <!-- Dashboard iframe, hidden until connected -->
+    <iframe class="dashboard-frame" id="dashboardFrame" style="display: none;" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+  </div>
+
+  <script>
+    const GATEWAY_URL = 'http://localhost:18789';
+    const RETRY_INTERVAL = 3000;
+    let retryTimer = null;
+
+    const connectionScreen = document.getElementById('connectionScreen');
+    const dashboardFrame = document.getElementById('dashboardFrame');
+    const statusLabel = document.getElementById('statusLabel');
+    const statusSpinner = document.getElementById('statusSpinner');
+    const retryBtn = document.getElementById('retryBtn');
+
+    function showConnecting() {
+      statusSpinner.style.display = 'block';
+      statusLabel.textContent = 'Connecting to gateway...';
+      statusLabel.className = 'status-label';
+      retryBtn.style.display = 'none';
+    }
+
+    function showError() {
+      statusSpinner.style.display = 'none';
+      statusLabel.textContent = 'Gateway offline';
+      statusLabel.className = 'status-label error';
+      retryBtn.style.display = 'inline-block';
+    }
+
+    function showConnected() {
+      connectionScreen.style.display = 'none';
+      dashboardFrame.style.display = 'block';
+      dashboardFrame.src = GATEWAY_URL;
+    }
+
+    async function connectToGateway() {
+      showConnecting();
+      try {
+        const response = await fetch(GATEWAY_URL, { mode: 'no-cors', cache: 'no-cache' });
+        // If no-cors, we cannot read response, but if it doesn't throw, the server is up
+        showConnected();
+      } catch (err) {
+        showError();
+        // Auto-retry in background
+        if (retryTimer) clearTimeout(retryTimer);
+        retryTimer = setTimeout(connectToGateway, RETRY_INTERVAL);
+      }
+    }
+
+    // Start connection attempt
+    connectToGateway();
+
+    // Listen for system info from preload
+    if (window.openclaw) {
+      window.openclaw.getSystemInfo().then(info => {
+        console.log('System info:', info);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenClaw Preferences</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: transparent;
+      color: #c8c8d8;
+      padding: 24px;
+    }
+
+    .titlebar {
+      -webkit-app-region: drag;
+      height: 38px;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
+    .prefs-container {
+      margin-top: 38px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      color: #f0f0f8;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .section h2 {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #f0f0f8;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .field:last-child {
+      border-bottom: none;
+    }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .field-value {
+      font-size: 13px;
+      color: #5a5a7a;
+    }
+
+    input[type="text"] {
+      font-family: "JetBrains Mono", "SF Mono", monospace;
+      font-size: 12px;
+      background: rgba(14, 14, 24, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #c8c8d8;
+      width: 200px;
+      transition: border-color 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: rgba(0, 212, 255, 0.4);
+      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1);
+    }
+
+    select {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-size: 13px;
+      background: rgba(14, 14, 24, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #c8c8d8;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: rgba(0, 212, 255, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="titlebar"></div>
+  <div class="prefs-container">
+    <h1>Preferences</h1>
+
+    <div class="section">
+      <h2>Connection</h2>
+      <div class="field">
+        <span class="field-label">Gateway URL</span>
+        <input type="text" id="gatewayUrl" value="http://localhost:18789" />
+      </div>
+      <div class="field">
+        <span class="field-label">Auto-reconnect</span>
+        <select id="autoReconnect">
+          <option value="true" selected>Enabled</option>
+          <option value="false">Disabled</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Appearance</h2>
+      <div class="field">
+        <span class="field-label">Window Vibrancy</span>
+        <select id="vibrancy" onchange="handleVibrancyChange(this.value)">
+          <option value="ultra-dark" selected>Ultra Dark</option>
+          <option value="dark">Dark</option>
+          <option value="under-window">Under Window</option>
+          <option value="content">Content</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="field-label">Theme</span>
+        <span class="field-value">Mac Fluid Dark</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>About</h2>
+      <div class="field">
+        <span class="field-label">Version</span>
+        <span class="field-value">1.0.0</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Electron</span>
+        <span class="field-value" id="electronVersion">--</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.openclaw) {
+      window.openclaw.getSystemInfo().then(info => {
+        document.getElementById('electronVersion').textContent = info.version || '--';
+      });
+    }
+
+    function handleVibrancyChange(value) {
+      if (window.openclaw) {
+        window.openclaw.setVibrancy(value);
+      }
+    }
+  </script>
+</body>
+</html>
