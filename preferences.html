@@ -3,89 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
   <title>OpenClaw Preferences</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
-      background: transparent;
+      background: #0a0a0f;
       color: #c8c8d8;
-      padding: 24px;
     }
 
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Titlebar with traffic lights ─── */
     .titlebar {
       -webkit-app-region: drag;
-      height: 38px;
+      height: 44px;
       width: 100%;
-      position: fixed;
-      top: 0;
-      left: 0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
     }
 
-    .prefs-container {
-      margin-top: 38px;
+    .traffic-light {
+      -webkit-app-region: no-drag;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .traffic-light:active { transform: scale(0.9); }
+
+    .tl-close { background: #ff5f57; }
+    .tl-close:hover { background: #ff3b30; box-shadow: 0 0 6px rgba(255, 59, 48, 0.5); }
+
+    .tl-min { background: #ffbd2e; }
+    .tl-min:hover { background: #f0a500; box-shadow: 0 0 6px rgba(255, 189, 46, 0.5); }
+
+    .tl-max { background: #28c840; opacity: 0.4; cursor: default; }
+
+    .titlebar-text {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(200, 200, 216, 0.6);
+      letter-spacing: -0.01em;
+      margin-right: 52px; /* balance the traffic lights */
     }
 
-    h1 {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 24px;
-      color: #f0f0f8;
+    /* ─── Scrollable content ─── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 24px 24px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
     }
+    .scroll-area::-webkit-scrollbar { width: 5px; }
+    .scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
 
+    /* ─── Sections ─── */
     .section {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
     }
 
     .section h2 {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: #f0f0f8;
-      margin-bottom: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(200, 200, 216, 0.5);
+      margin-bottom: 12px;
     }
 
     .field {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
-
-    .field:last-child {
-      border-bottom: none;
-    }
+    .field:last-child { border-bottom: none; }
 
     .field-label {
       font-size: 13px;
       font-weight: 500;
+      color: #e0e0ec;
     }
 
     .field-value {
       font-size: 13px;
-      color: #5a5a7a;
+      color: rgba(200, 200, 216, 0.5);
+      font-family: "SF Mono", "JetBrains Mono", monospace;
     }
 
     input[type="text"] {
-      font-family: "JetBrains Mono", "SF Mono", monospace;
+      font-family: "SF Mono", "JetBrains Mono", monospace;
       font-size: 12px;
-      background: rgba(14, 14, 24, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 7px 12px;
       color: #c8c8d8;
       width: 200px;
-      transition: border-color 0.2s ease;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-
     input[type="text"]:focus {
       outline: none;
       border-color: rgba(0, 212, 255, 0.4);
@@ -95,25 +134,113 @@
     select {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       font-size: 13px;
-      background: rgba(14, 14, 24, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 7px 12px;
       color: #c8c8d8;
       cursor: pointer;
+      transition: border-color 0.2s;
     }
-
     select:focus {
       outline: none;
       border-color: rgba(0, 212, 255, 0.4);
     }
+
+    /* ─── Theme Grid ─── */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .theme-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.02);
+      border: 2px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .theme-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .theme-card.active {
+      border-color: var(--theme-accent, #00d4ff);
+      box-shadow: 0 0 12px var(--theme-glow, rgba(0, 212, 255, 0.15));
+    }
+
+    .theme-preview {
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+    }
+
+    .theme-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .theme-bar {
+      flex: 1;
+      height: 3px;
+      border-radius: 2px;
+      opacity: 0.6;
+    }
+
+    .theme-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e0e0ec;
+    }
+
+    .theme-desc {
+      font-size: 10px;
+      color: rgba(200, 200, 216, 0.4);
+    }
+
+    .theme-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+    }
+    .theme-card.active .theme-check {
+      display: flex;
+    }
   </style>
 </head>
 <body>
-  <div class="titlebar"></div>
-  <div class="prefs-container">
-    <h1>Preferences</h1>
+  <div class="titlebar">
+    <button class="traffic-light tl-close" onclick="window.close()" title="Close"></button>
+    <button class="traffic-light tl-min" onclick="window.close()" title="Minimize"></button>
+    <button class="traffic-light tl-max" title="Maximize" disabled></button>
+    <span class="titlebar-text">Preferences</span>
+  </div>
 
+  <div class="scroll-area">
+    <!-- Theme -->
+    <div class="section">
+      <h2>Theme</h2>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+
+    <!-- Connection -->
     <div class="section">
       <h2>Connection</h2>
       <div class="field">
@@ -129,48 +256,93 @@
       </div>
     </div>
 
+    <!-- Appearance -->
     <div class="section">
-      <h2>Appearance</h2>
+      <h2>Window</h2>
       <div class="field">
-        <span class="field-label">Window Vibrancy</span>
+        <span class="field-label">Vibrancy</span>
         <select id="vibrancy" onchange="handleVibrancyChange(this.value)">
-          <option value="ultra-dark" selected>Ultra Dark</option>
-          <option value="dark">Dark</option>
+          <option value="sidebar" selected>Sidebar</option>
           <option value="under-window">Under Window</option>
           <option value="content">Content</option>
         </select>
       </div>
-      <div class="field">
-        <span class="field-label">Theme</span>
-        <span class="field-value">Mac Fluid Dark</span>
-      </div>
     </div>
 
+    <!-- About -->
     <div class="section">
-      <h2>About</h2>
+      <h2>System</h2>
       <div class="field">
         <span class="field-label">Version</span>
         <span class="field-value">1.0.0</span>
       </div>
       <div class="field">
-        <span class="field-label">Electron</span>
-        <span class="field-value" id="electronVersion">--</span>
+        <span class="field-label">Platform</span>
+        <span class="field-value" id="platformInfo">--</span>
       </div>
     </div>
   </div>
 
   <script>
-    if (window.openclaw) {
-      window.openclaw.getSystemInfo().then(info => {
-        document.getElementById('electronVersion').textContent = info.version || '--';
-      });
+    const themeColors = {
+      'deep-space': { bg: '#0a0a0f', accent: '#00d4ff', accent2: '#a855f7', text: '#c8c8d8' },
+      'arctic-frost': { bg: '#0c1117', accent: '#58b4ff', accent2: '#b48eff', text: '#d4e4f7' },
+      'ember-glow': { bg: '#110c08', accent: '#ff8c38', accent2: '#ff4466', text: '#e0d0c0' },
+      'forest-canopy': { bg: '#080e0a', accent: '#3ddc84', accent2: '#ffd54f', text: '#c0d8c8' }
+    };
+
+    async function initThemes() {
+      if (!window.openclaw) return;
+      const { themes, current } = await window.openclaw.getThemes();
+      const grid = document.getElementById('themeGrid');
+      grid.innerHTML = '';
+
+      for (const [id, theme] of Object.entries(themes)) {
+        const c = themeColors[id] || themeColors['deep-space'];
+        const card = document.createElement('div');
+        card.className = 'theme-card' + (id === current ? ' active' : '');
+        card.style.setProperty('--theme-accent', c.accent);
+        card.style.setProperty('--theme-glow', c.accent + '25');
+        card.innerHTML = `
+          <div class="theme-preview" style="background:${c.bg};border:1px solid ${c.accent}20">
+            <div class="theme-dot" style="background:${c.accent}"></div>
+            <div class="theme-dot" style="background:${c.accent2}"></div>
+            <div class="theme-bar" style="background:${c.text}"></div>
+          </div>
+          <div class="theme-name">${theme.name}</div>
+          <div class="theme-desc">${theme.description}</div>
+          <div class="theme-check" style="background:${c.accent}">&#10003;</div>
+        `;
+        card.onclick = () => selectTheme(id);
+        grid.appendChild(card);
+      }
+    }
+
+    async function selectTheme(id) {
+      if (!window.openclaw) return;
+      await window.openclaw.setTheme(id);
+      // Refresh the theme grid to update active state
+      initThemes();
     }
 
     function handleVibrancyChange(value) {
-      if (window.openclaw) {
-        window.openclaw.setVibrancy(value);
-      }
+      if (window.openclaw) window.openclaw.setVibrancy(value);
     }
+
+    // Init
+    if (window.openclaw) {
+      window.openclaw.getSystemInfo().then(info => {
+        document.getElementById('platformInfo').textContent =
+          `${info.platform} ${info.version}`;
+      });
+      window.openclaw.getGatewayConfig().then(config => {
+        if (config) {
+          document.getElementById('gatewayUrl').value =
+            `http://localhost:${config.port}`;
+        }
+      });
+    }
+    initThemes();
   </script>
 </body>
 </html>
