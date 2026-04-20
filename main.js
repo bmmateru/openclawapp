@@ -426,6 +426,25 @@ class OpenClawApp {
 
     this.mainWindow = new BrowserWindow(windowOpts);
 
+    // ── Origin header fix ──────────────────────────────────────────
+    // The OpenClaw gateway restricts controlUi access by origin.
+    // When Electron loads http://192.168.1.167:18789, the browser
+    // sets Origin on WebSocket/fetch requests. The gateway rejects
+    // origins that aren't its own host. Fix: rewrite the Origin
+    // header on all outgoing requests to match the gateway URL.
+    this.mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+      (details, callback) => {
+        const gatewayPort = this.gatewayConfig.port || 18789;
+        const url = new URL(details.url);
+        // Only rewrite for requests going to the gateway
+        if (parseInt(url.port) === gatewayPort || url.hostname === '127.0.0.1' ||
+            url.hostname === 'localhost' || url.hostname.endsWith('.local')) {
+          details.requestHeaders['Origin'] = `http://${url.hostname}:${url.port}`;
+        }
+        callback({ requestHeaders: details.requestHeaders });
+      }
+    );
+
     this.mainWindow.webContents.on('did-finish-load', () => {
       this.injectAppShell();
       this.injectCustomCSS();
