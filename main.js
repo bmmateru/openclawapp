@@ -2,6 +2,9 @@ const { app, BrowserWindow, Menu, nativeTheme, ipcMain, shell } = require('elect
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const net = require('net');
+const os = require('os');
+const crypto = require('crypto');
 const { execFile, exec } = require('child_process');
 
 // ─── Theme Definitions ───────────────────────────────────────────────
@@ -58,10 +61,13 @@ class OpenClawApp {
     this.isDev = process.env.NODE_ENV === 'development';
     this.gatewayConfig = null;
     this.retryTimer = null;
+    this.retryCount = 0;
+    this.maxRetries = 20;
     this.customCssPath = null;
     this.currentTheme = 'deep-space';
     this.settingsPath = path.join(process.env.HOME || '', '.openclaw', 'app-settings.json');
     this.injectedCssKeys = []; // Track CSS keys for removal on theme switch
+    this.discoveredGateways = []; // Network-discovered gateways
 
     this.loadSettings();
     this.loadOpenClawConfig();
@@ -128,6 +134,131 @@ class OpenClawApp {
     const cssPath = path.join(process.env.HOME || '', '.openclaw', 'custom-ui', 'custom-enhancements.css');
     if (fs.existsSync(cssPath)) {
       this.customCssPath = cssPath;
+    }
+  }
+
+  // ─── Network Auto-Discovery ─────────────────────────────────────────
+  // Scans the local subnet for machines running OpenClaw on port 18789.
+  // Returns an array of { ip, port, responseTime } sorted by speed.
+
+  async discoverGateways(port) {
+    port = port || this.gatewayConfig.port || 18789;
+    const subnet = this._getLocalSubnet();
+    if (!subnet) return [];
+
+    console.log(`[OpenClaw] Scanning ${subnet}.1-254 for gateways on port ${port}...`);
+    const found = [];
+    const scanPromises = [];
+
+    for (let i = 1; i <= 254; i++) {
+      const ip = `${subnet}.${i}`;
+      scanPromises.push(this._probeHost(ip, port, 1500));
+    }
+
+    const results = await Promise.allSettled(scanPromises);
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value) found.push(r.value);
+    }
+
+    found.sort((a, b) => a.responseTime - b.responseTime);
+    this.discoveredGateways = found;
+    console.log(`[OpenClaw] Found ${found.length} gateway(s): ${found.map(g => g.ip).join(', ') || 'none'}`);
+    return found;
+  }
+
+  _getLocalSubnet() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+      for (const iface of interfaces[name]) {
+        if (iface.family === 'IPv4' && !iface.internal && iface.address.startsWith('192.168.')) {
+          const parts = iface.address.split('.');
+          return `${parts[0]}.${parts[1]}.${parts[2]}`;
+        }
+      }
+    }
+    // Fallback: try 10.x.x.x networks
+    for (const name of Object.keys(interfaces)) {
+      for (const iface of interfaces[name]) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          const parts = iface.address.split('.');
+          return `${parts[0]}.${parts[1]}.${parts[2]}`;
+        }
+      }
+    }
+    return null;
+  }
+
+  _probeHost(ip, port, timeout) {
+    return new Promise((resolve) => {
+      const start = Date.now();
+      const sock = new net.Socket();
+      sock.setTimeout(timeout);
+
+      sock.on('connect', () => {
+        const responseTime = Date.now() - start;
+        sock.destroy();
+        // Verify it's actually an HTTP server (not just an open port)
+        this._verifyGateway(ip, port).then(isGateway => {
+          resolve(isGateway ? { ip, port, responseTime } : null);
+        });
+      });
+
+      sock.on('timeout', () => { sock.destroy(); resolve(null); });
+      sock.on('error', () => { sock.destroy(); resolve(null); });
+
+      sock.connect(port, ip);
+    });
+  }
+
+  _verifyGateway(ip, port) {
+    return new Promise((resolve) => {
+      const req = http.request({
+        hostname: ip, port, path: '/', method: 'HEAD', timeout: 2000
+      }, (res) => resolve(res.statusCode < 500));
+      req.on('error', () => resolve(false));
+      req.on('timeout', () => { req.destroy(); resolve(false); });
+      req.end();
+    });
+  }
+
+  // ─── Token Management ───────────────────────────────────────────────
+  // Generates a secure token and writes it to the openclaw config file.
+  // If the config doesn't exist, creates it with sensible defaults.
+
+  ensureToken() {
+    if (this.gatewayConfig.mode === 'token' && this.gatewayConfig.token) {
+      return this.gatewayConfig.token; // Token already exists
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const configDir = path.join(process.env.HOME || '', '.openclaw');
+    const configPath = path.join(configDir, 'openclaw.json');
+
+    try {
+      if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+
+      let config = {};
+      if (fs.existsSync(configPath)) {
+        try { config = JSON.parse(fs.readFileSync(configPath, 'utf-8')); } catch { config = {}; }
+      }
+
+      if (!config.gateway) config.gateway = {};
+      if (!config.gateway.auth) config.gateway.auth = {};
+      config.gateway.port = config.gateway.port || 18789;
+      config.gateway.bind = config.gateway.bind || 'loopback';
+      config.gateway.auth.mode = 'token';
+      config.gateway.auth.token = token;
+
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      console.log(`[OpenClaw] Token generated and saved to ${configPath}`);
+
+      // Update in-memory config
+      this.gatewayConfig.mode = 'token';
+      this.gatewayConfig.token = token;
+      return token;
+    } catch (e) {
+      console.log('[OpenClaw] Could not generate token:', e.message);
+      return null;
     }
   }
 
@@ -432,23 +563,77 @@ class OpenClawApp {
   async connectToGateway() {
     if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = null; }
 
+    // 1. Check local gateway first
     const isUp = await this.checkGateway();
     if (isUp) {
       console.log('[OpenClaw] Gateway is up, loading dashboard...');
+      this.retryCount = 0;
       this.mainWindow.loadURL(this.getGatewayUrl());
-    } else {
-      console.log('[OpenClaw] Gateway offline, auto-starting...');
+      return;
+    }
+
+    // 2. Try network auto-discovery (find Mac Minis on LAN)
+    if (this.retryCount === 0) {
+      this.showConnectionScreen('Scanning network for gateways...');
+      const discovered = await this.discoverGateways();
+      if (discovered.length > 0) {
+        const gw = discovered[0]; // Use fastest responding gateway
+        console.log(`[OpenClaw] Discovered gateway at ${gw.ip}:${gw.port} (${gw.responseTime}ms)`);
+        this.gatewayConfig.port = gw.port;
+        // Update URL to use discovered host instead of localhost
+        this._discoveredHost = gw.ip;
+        this.retryCount = 0;
+        this.mainWindow.loadURL(this._getDiscoveredUrl(gw));
+        return;
+      }
+    }
+
+    // 3. Try auto-starting local gateway
+    if (this.retryCount === 0) {
       this.showConnectionScreen('Starting gateway...');
       await this.startGateway();
-      this.retryTimer = setTimeout(() => this.connectToGateway(), 3000);
     }
+
+    // 4. Retry with exponential backoff (3s → 6s → 12s → ... → 30s max)
+    this.retryCount++;
+    if (this.retryCount > this.maxRetries) {
+      console.log(`[OpenClaw] Giving up after ${this.maxRetries} retries`);
+      this.showConnectionScreen('Could not connect to gateway', true);
+      return;
+    }
+
+    const delay = Math.min(3000 * Math.pow(1.5, this.retryCount - 1), 30000);
+    console.log(`[OpenClaw] Retry ${this.retryCount}/${this.maxRetries} in ${Math.round(delay / 1000)}s...`);
+    this.showConnectionScreen(`Connecting... (attempt ${this.retryCount}/${this.maxRetries})`);
+    this.retryTimer = setTimeout(() => this.connectToGateway(), delay);
+  }
+
+  _getDiscoveredUrl(gw) {
+    const base = `http://${gw.ip}:${gw.port}`;
+    if (this.gatewayConfig.mode === 'token' && this.gatewayConfig.token) {
+      return `${base}?token=${this.gatewayConfig.token}`;
+    }
+    return base;
   }
 
   // ─── Connection Screen ────────────────────────────────────────────
 
-  showConnectionScreen(statusMsg) {
+  showConnectionScreen(statusMsg, showRetry) {
     const t = THEMES[this.currentTheme];
     const msg = statusMsg || `Waiting for gateway on port ${this.gatewayConfig.port}...`;
+    const retryBtn = showRetry ? `
+      <button class="retry" onclick="if(window.openclaw)window.openclaw.reconnectGateway()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        Retry Connection
+      </button>
+      <button class="retry scan" onclick="if(window.openclaw)window.openclaw.scanNetwork()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Scan Network
+      </button>` : '';
+    const indicator = showRetry
+      ? `<div class="card error"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${t.danger}" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><circle cx="12" cy="16" r="0.5" fill="${t.danger}"/></svg><span>${msg}</span></div>`
+      : `<div class="card"><div class="spin"></div><span>${msg}</span></div>`;
+
     this.mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="color-scheme" content="dark">
 <style>
@@ -458,7 +643,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:${t.bg};
   -webkit-font-smoothing:antialiased;color:${t.text}}
 .drag{-webkit-app-region:drag;height:38px;width:100%;position:fixed;top:0;left:0;z-index:9999}
 .c{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:24px;padding:40px;
+  gap:20px;padding:40px;
   background:radial-gradient(ellipse 80% 50% at 50% -20%,${t.accent}08,transparent 60%),
     radial-gradient(ellipse 60% 40% at 80% 100%,${t.accent2}06,transparent 50%),${t.bg};
   text-align:center}
@@ -472,14 +657,23 @@ h1{font-size:30px;font-weight:800;letter-spacing:-0.03em;
   -webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .sub{font-size:14px;color:${t.muted}}
 .card{background:${t.glass};border:1px solid ${t.border};
-  backdrop-filter:blur(16px);border-radius:14px;padding:20px 28px;
+  backdrop-filter:blur(16px);border-radius:14px;padding:16px 24px;
   display:flex;align-items:center;gap:12px;font-size:14px}
+.card.error{border-color:${t.danger}30;background:${t.danger}08}
 .spin{width:20px;height:20px;border:2px solid ${t.border};
   border-top-color:${t.accent};border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hint{font-size:12px;color:${t.muted};font-family:"SF Mono",monospace}
 .hint code{background:${t.border};border:1px solid ${t.borderStrong};
   border-radius:6px;padding:2px 8px;color:${t.accent}}
+.retry{-webkit-app-region:no-drag;background:${t.accent};color:${t.bg};border:none;
+  border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;display:inline-flex;align-items:center;gap:8px;
+  transition:opacity 0.2s,transform 0.1s}
+.retry:hover{opacity:0.9}.retry:active{transform:scale(0.97)}
+.retry.scan{background:transparent;color:${t.accent};border:1px solid ${t.border}}
+.retry.scan:hover{background:${t.accent}10}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 </style></head><body>
 <div class="drag"></div>
 <div class="c">
@@ -488,7 +682,8 @@ h1{font-size:30px;font-weight:800;letter-spacing:-0.03em;
   </div>
   <h1>OpenClaw</h1>
   <p class="sub">Mac Fluid Edition</p>
-  <div class="card"><div class="spin"></div><span>${msg}</span></div>
+  ${indicator}
+  ${showRetry ? `<div class="btns">${retryBtn}</div>` : ''}
   <p class="hint">Start manually: <code>openclaw gateway install</code></p>
 </div></body></html>`)}`);
   }
@@ -737,8 +932,21 @@ h1{font-size:30px;font-weight:800;letter-spacing:-0.03em;
       hasToken: !!this.gatewayConfig.token
     }));
     ipcMain.handle('reconnect-gateway', () => {
+      this.retryCount = 0;
       this.loadOpenClawConfig();
       this.connectToGateway();
+    });
+    ipcMain.handle('scan-network', async () => {
+      this.retryCount = 0;
+      this.showConnectionScreen('Scanning network for gateways...');
+      const gateways = await this.discoverGateways();
+      if (gateways.length > 0) {
+        const gw = gateways[0];
+        this.mainWindow.loadURL(this._getDiscoveredUrl(gw));
+        return { found: true, ip: gw.ip, port: gw.port };
+      }
+      this.showConnectionScreen('No gateways found on network', true);
+      return { found: false };
     });
     ipcMain.handle('get-themes', () => {
       return { themes: THEMES, current: this.currentTheme };

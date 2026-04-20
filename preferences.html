@@ -12,8 +12,8 @@
       width: 100%; height: 100%; overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
-      background: #0a0a0f;
-      color: #c8c8d8;
+      background: var(--pref-bg, #0a0a0f);
+      color: var(--pref-text, #c8c8d8);
     }
 
     body {
@@ -36,7 +36,7 @@
     .titlebar-text {
       font-size: 13px;
       font-weight: 600;
-      color: rgba(200, 200, 216, 0.6);
+      color: var(--pref-muted, rgba(200, 200, 216, 0.6));
       letter-spacing: -0.01em;
     }
 
@@ -55,8 +55,8 @@
 
     /* ─── Sections ─── */
     .section {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: var(--pref-card, rgba(255, 255, 255, 0.03));
+      border: 1px solid var(--pref-border, rgba(255, 255, 255, 0.06));
       border-radius: 12px;
       padding: 16px 20px;
       margin-bottom: 12px;
@@ -105,8 +105,8 @@
     }
     input[type="text"]:focus {
       outline: none;
-      border-color: rgba(0, 212, 255, 0.4);
-      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1);
+      border-color: var(--pref-accent-40, rgba(0, 212, 255, 0.4));
+      box-shadow: 0 0 0 2px var(--pref-accent-10, rgba(0, 212, 255, 0.1));
     }
 
     select {
@@ -122,7 +122,7 @@
     }
     select:focus {
       outline: none;
-      border-color: rgba(0, 212, 255, 0.4);
+      border-color: var(--pref-accent-40, rgba(0, 212, 255, 0.4));
     }
 
     /* ─── Theme Grid ─── */
@@ -296,12 +296,28 @@
     async function selectTheme(id) {
       if (!window.openclaw) return;
       await window.openclaw.setTheme(id);
-      // Refresh the theme grid to update active state
+      // Refresh colors + grid to match new theme
+      await applyPrefTheme();
       initThemes();
     }
 
     function handleVibrancyChange(value) {
       if (window.openclaw) window.openclaw.setVibrancy(value);
+    }
+
+    // Apply current theme colors to the preferences window
+    async function applyPrefTheme() {
+      if (!window.openclaw) return;
+      const { current } = await window.openclaw.getThemes();
+      const c = themeColors[current] || themeColors['deep-space'];
+      const root = document.documentElement;
+      root.style.setProperty('--pref-bg', c.bg);
+      root.style.setProperty('--pref-text', c.text);
+      root.style.setProperty('--pref-muted', c.text + '99');
+      root.style.setProperty('--pref-card', c.accent + '08');
+      root.style.setProperty('--pref-border', c.accent + '18');
+      root.style.setProperty('--pref-accent-40', c.accent + '66');
+      root.style.setProperty('--pref-accent-10', c.accent + '1a');
     }
 
     // Init
@@ -316,6 +332,7 @@
             `http://localhost:${config.port}`;
         }
       });
+      applyPrefTheme();
     }
     initThemes();
   </script>
