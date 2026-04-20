@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('openclaw', {
   getGatewayConfig: () => ipcRenderer.invoke('get-gateway-config'),
   reconnectGateway: () => ipcRenderer.invoke('reconnect-gateway'),
   scanNetwork: () => ipcRenderer.invoke('scan-network'),
+  setGatewayHost: (host) => ipcRenderer.invoke('set-gateway-host', host),
   getThemes: () => ipcRenderer.invoke('get-themes'),
   setTheme: (themeId) => ipcRenderer.invoke('set-theme', themeId)
 });

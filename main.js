@@ -4,6 +4,7 @@ const fs = require('fs');
 const http = require('http');
 const net = require('net');
 const os = require('os');
+const dns = require('dns');
 const crypto = require('crypto');
 const { execFile, exec } = require('child_process');
 
@@ -65,6 +66,7 @@ class OpenClawApp {
     this.maxRetries = 20;
     this.customCssPath = null;
     this.currentTheme = 'deep-space';
+    this.gatewayHost = null; // Bonjour hostname of preferred gateway (e.g. "Bernards-Mac-mini.local")
     this.settingsPath = path.join(process.env.HOME || '', '.openclaw', 'app-settings.json');
     this.injectedCssKeys = []; // Track CSS keys for removal on theme switch
     this.discoveredGateways = []; // Network-discovered gateways
@@ -88,6 +90,9 @@ class OpenClawApp {
       if (settings.theme && THEMES[settings.theme]) {
         this.currentTheme = settings.theme;
       }
+      if (settings.gatewayHost) {
+        this.gatewayHost = settings.gatewayHost;
+      }
     } catch (e) {
       // First run — defaults are fine
     }
@@ -97,7 +102,9 @@ class OpenClawApp {
     try {
       const dir = path.dirname(this.settingsPath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(this.settingsPath, JSON.stringify({ theme: this.currentTheme }, null, 2));
+      const data = { theme: this.currentTheme };
+      if (this.gatewayHost) data.gatewayHost = this.gatewayHost;
+      fs.writeFileSync(this.settingsPath, JSON.stringify(data, null, 2));
     } catch (e) {
       console.log('[OpenClaw] Could not save settings:', e.message);
     }
@@ -214,6 +221,68 @@ class OpenClawApp {
     return new Promise((resolve) => {
       const req = http.request({
         hostname: ip, port, path: '/', method: 'HEAD', timeout: 2000
+      }, (res) => resolve(res.statusCode < 500));
+      req.on('error', () => resolve(false));
+      req.on('timeout', () => { req.destroy(); resolve(false); });
+      req.end();
+    });
+  }
+
+  // ─── Bonjour Mac Mini Discovery ──────────────────────────────────────
+  // Uses macOS dns-sd to find Mac Minis on the network via _ssh._tcp.
+  // Saves the hostname so future connections resolve instantly via mDNS.
+
+  discoverMacMini() {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => { resolve(null); }, 5000);
+      exec('dns-sd -B _ssh._tcp . 2>&1', { timeout: 5000 }, (err, stdout) => {
+        clearTimeout(timeout);
+        // Parse output for "Mac mini" or "Mac-mini" entries
+        const lines = (stdout || '').split('\n');
+        for (const line of lines) {
+          const match = line.match(/Instance Name\s*$/i);
+          if (match) continue; // header line
+          // Look for Mac mini entries: "Bernard's Mac mini", "mac-mini", etc.
+          const nameMatch = line.match(/(?:Add|Rmv)\s+\d+\s+\d+\s+\S+\s+\S+\s+(.+)$/);
+          if (nameMatch) {
+            const name = nameMatch[1].trim();
+            if (/mac\s*mini/i.test(name)) {
+              // Convert Bonjour name to .local hostname
+              const hostname = name.replace(/['\s]+/g, '-').replace(/[^a-zA-Z0-9-]/g, '') + '.local';
+              console.log(`[OpenClaw] Discovered Mac Mini via Bonjour: "${name}" → ${hostname}`);
+              resolve(hostname);
+              return;
+            }
+          }
+        }
+        resolve(null);
+      });
+    });
+  }
+
+  resolveHostname(hostname) {
+    return new Promise((resolve) => {
+      dns.lookup(hostname, { family: 4 }, (err, address) => {
+        if (err || !address) {
+          console.log(`[OpenClaw] Could not resolve ${hostname}: ${err?.message || 'no address'}`);
+          resolve(null);
+        } else {
+          console.log(`[OpenClaw] Resolved ${hostname} → ${address}`);
+          resolve(address);
+        }
+      });
+    });
+  }
+
+  // Check if a specific host has a gateway running
+  checkRemoteGateway(ip, port) {
+    return new Promise((resolve) => {
+      const req = http.request({
+        hostname: ip, port: port || this.gatewayConfig.port,
+        path: '/', method: 'HEAD', timeout: 3000,
+        headers: this.gatewayConfig.mode === 'token'
+          ? { 'Authorization': `Bearer ${this.gatewayConfig.token}` }
+          : {}
       }, (res) => resolve(res.statusCode < 500));
       req.on('error', () => resolve(false));
       req.on('timeout', () => { req.destroy(); resolve(false); });
@@ -562,39 +631,69 @@ class OpenClawApp {
 
   async connectToGateway() {
     if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = null; }
+    const port = this.gatewayConfig.port;
 
-    // 1. Check local gateway first
-    const isUp = await this.checkGateway();
-    if (isUp) {
-      console.log('[OpenClaw] Gateway is up, loading dashboard...');
+    // ── Priority 1: Saved Mac Mini hostname (instant via mDNS) ──
+    if (this.gatewayHost) {
+      this.showConnectionScreen(`Connecting to ${this.gatewayHost}...`);
+      const ip = await this.resolveHostname(this.gatewayHost);
+      if (ip) {
+        const isUp = await this.checkRemoteGateway(ip, port);
+        if (isUp) {
+          console.log(`[OpenClaw] Connected to saved host ${this.gatewayHost} (${ip}:${port})`);
+          this.retryCount = 0;
+          this.mainWindow.loadURL(this._buildUrl(ip, port));
+          return;
+        }
+      }
+    }
+
+    // ── Priority 2: Localhost ──
+    const localUp = await this.checkGateway();
+    if (localUp) {
+      console.log('[OpenClaw] Gateway is up on localhost');
       this.retryCount = 0;
       this.mainWindow.loadURL(this.getGatewayUrl());
       return;
     }
 
-    // 2. Try network auto-discovery (find Mac Minis on LAN)
+    // ── Priority 3: Bonjour discovery (first attempt only) ──
     if (this.retryCount === 0) {
+      this.showConnectionScreen('Discovering Mac Mini on network...');
+      const hostname = await this.discoverMacMini();
+      if (hostname) {
+        const ip = await this.resolveHostname(hostname);
+        if (ip) {
+          const isUp = await this.checkRemoteGateway(ip, port);
+          if (isUp) {
+            // Save for instant reconnect next time
+            this.gatewayHost = hostname;
+            this.saveSettings();
+            console.log(`[OpenClaw] Connected to discovered ${hostname} (${ip}:${port}) — saved for next launch`);
+            this.retryCount = 0;
+            this.mainWindow.loadURL(this._buildUrl(ip, port));
+            return;
+          }
+        }
+      }
+
+      // ── Priority 4: Subnet scan (fallback, slower) ──
       this.showConnectionScreen('Scanning network for gateways...');
       const discovered = await this.discoverGateways();
       if (discovered.length > 0) {
-        const gw = discovered[0]; // Use fastest responding gateway
-        console.log(`[OpenClaw] Discovered gateway at ${gw.ip}:${gw.port} (${gw.responseTime}ms)`);
-        this.gatewayConfig.port = gw.port;
-        // Update URL to use discovered host instead of localhost
-        this._discoveredHost = gw.ip;
+        const gw = discovered[0];
+        console.log(`[OpenClaw] Found gateway at ${gw.ip}:${gw.port} via subnet scan`);
         this.retryCount = 0;
-        this.mainWindow.loadURL(this._getDiscoveredUrl(gw));
+        this.mainWindow.loadURL(this._buildUrl(gw.ip, gw.port));
         return;
       }
-    }
 
-    // 3. Try auto-starting local gateway
-    if (this.retryCount === 0) {
-      this.showConnectionScreen('Starting gateway...');
+      // ── Priority 5: Try auto-starting local gateway ──
+      this.showConnectionScreen('Starting local gateway...');
       await this.startGateway();
     }
 
-    // 4. Retry with exponential backoff (3s → 6s → 12s → ... → 30s max)
+    // ── Retry with exponential backoff ──
     this.retryCount++;
     if (this.retryCount > this.maxRetries) {
       console.log(`[OpenClaw] Giving up after ${this.maxRetries} retries`);
@@ -608,8 +707,8 @@ class OpenClawApp {
     this.retryTimer = setTimeout(() => this.connectToGateway(), delay);
   }
 
-  _getDiscoveredUrl(gw) {
-    const base = `http://${gw.ip}:${gw.port}`;
+  _buildUrl(ip, port) {
+    const base = `http://${ip}:${port}`;
     if (this.gatewayConfig.mode === 'token' && this.gatewayConfig.token) {
       return `${base}?token=${this.gatewayConfig.token}`;
     }
@@ -929,8 +1028,14 @@ h1{font-size:30px;font-weight:800;letter-spacing:-0.03em;
     ipcMain.handle('get-gateway-config', () => ({
       port: this.gatewayConfig.port,
       mode: this.gatewayConfig.mode,
-      hasToken: !!this.gatewayConfig.token
+      hasToken: !!this.gatewayConfig.token,
+      gatewayHost: this.gatewayHost || ''
     }));
+    ipcMain.handle('set-gateway-host', (_, host) => {
+      this.gatewayHost = host;
+      this.saveSettings();
+      console.log(`[OpenClaw] Gateway host set to: ${host}`);
+    });
     ipcMain.handle('reconnect-gateway', () => {
       this.retryCount = 0;
       this.loadOpenClawConfig();

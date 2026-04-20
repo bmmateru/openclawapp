@@ -219,15 +219,16 @@
     <div class="section">
       <h2>Connection</h2>
       <div class="field">
-        <span class="field-label">Gateway URL</span>
-        <input type="text" id="gatewayUrl" value="http://localhost:18789" />
+        <span class="field-label">Gateway Host</span>
+        <input type="text" id="gatewayHost" placeholder="e.g. Bernards-Mac-mini.local" style="width:220px" />
       </div>
       <div class="field">
-        <span class="field-label">Auto-reconnect</span>
-        <select id="autoReconnect">
-          <option value="true" selected>Enabled</option>
-          <option value="false">Disabled</option>
-        </select>
+        <span class="field-label">Port</span>
+        <span class="field-value" id="gatewayPort">18789</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Auth Mode</span>
+        <span class="field-value" id="gatewayAuth">--</span>
       </div>
     </div>
 
@@ -328,8 +329,18 @@
       });
       window.openclaw.getGatewayConfig().then(config => {
         if (config) {
-          document.getElementById('gatewayUrl').value =
-            `http://localhost:${config.port}`;
+          document.getElementById('gatewayPort').textContent = config.port;
+          document.getElementById('gatewayAuth').textContent = config.mode || 'none';
+          if (config.gatewayHost) {
+            document.getElementById('gatewayHost').value = config.gatewayHost;
+          }
+        }
+      });
+      // Save gateway host on blur
+      document.getElementById('gatewayHost').addEventListener('change', function() {
+        const host = this.value.trim();
+        if (host && window.openclaw) {
+          window.openclaw.setGatewayHost(host);
         }
       });
       applyPrefTheme();
