@@ -70,6 +70,8 @@ class OpenClawApp {
     this.settingsPath = path.join(process.env.HOME || '', '.openclaw', 'app-settings.json');
     this.injectedCssKeys = []; // Track CSS keys for removal on theme switch
     this.discoveredGateways = []; // Network-discovered gateways
+    this.proxyServer = null; // Local reverse proxy to gateway
+    this.proxyPort = null;   // Port the proxy listens on
 
     this.loadSettings();
     this.loadOpenClawConfig();
@@ -77,6 +79,7 @@ class OpenClawApp {
     app.whenReady().then(() => this.createWindow());
     app.on('window-all-closed', this.handleWindowAllClosed.bind(this));
     app.on('activate', this.handleActivate.bind(this));
+    app.on('before-quit', () => this._stopProxy());
 
     this.setupIPC();
   }
@@ -290,6 +293,85 @@ class OpenClawApp {
     });
   }
 
+  // ─── Local Reverse Proxy ─────────────────────────────────────────────
+  // Proxies http://localhost:{proxyPort} → http://{remoteHost}:{gatewayPort}
+  // The gateway checks Origin against its own host. By loading the UI from
+  // localhost, the browser sets Origin=http://localhost:{proxyPort} and the
+  // proxy rewrites it to the gateway's own address, passing the origin check.
+  // Also proxies WebSocket upgrade requests for the real-time control channel.
+
+  _startProxy(targetHost, targetPort) {
+    return new Promise((resolve, reject) => {
+      if (this.proxyServer) { resolve(this.proxyPort); return; }
+
+      const proxy = http.createServer((req, res) => {
+        const opts = {
+          hostname: targetHost,
+          port: targetPort,
+          path: req.url,
+          method: req.method,
+          headers: { ...req.headers, host: `${targetHost}:${targetPort}`, origin: `http://${targetHost}:${targetPort}` },
+        };
+        const proxyReq = http.request(opts, (proxyRes) => {
+          res.writeHead(proxyRes.statusCode, proxyRes.headers);
+          proxyRes.pipe(res, { end: true });
+        });
+        proxyReq.on('error', (e) => {
+          res.writeHead(502);
+          res.end('Proxy error: ' + e.message);
+        });
+        req.pipe(proxyReq, { end: true });
+      });
+
+      // WebSocket upgrade proxy
+      proxy.on('upgrade', (req, clientSocket, head) => {
+        const opts = {
+          hostname: targetHost,
+          port: targetPort,
+          path: req.url,
+          method: 'GET',
+          headers: { ...req.headers, host: `${targetHost}:${targetPort}`, origin: `http://${targetHost}:${targetPort}` },
+        };
+        const proxyReq = http.request(opts);
+        proxyReq.on('upgrade', (proxyRes, proxySocket, proxyHead) => {
+          clientSocket.write(
+            `HTTP/1.1 101 Switching Protocols\r\n` +
+            Object.entries(proxyRes.headers).map(([k,v]) => `${k}: ${v}`).join('\r\n') +
+            '\r\n\r\n'
+          );
+          if (proxyHead.length) clientSocket.write(proxyHead);
+          proxySocket.pipe(clientSocket);
+          clientSocket.pipe(proxySocket);
+          proxySocket.on('error', () => clientSocket.destroy());
+          clientSocket.on('error', () => proxySocket.destroy());
+        });
+        proxyReq.on('error', () => clientSocket.destroy());
+        proxyReq.end();
+        if (head.length) proxyReq.write(head);
+      });
+
+      // Listen on random available port
+      proxy.listen(0, '127.0.0.1', () => {
+        this.proxyPort = proxy.address().port;
+        this.proxyServer = proxy;
+        console.log(`[OpenClaw] Proxy started: localhost:${this.proxyPort} → ${targetHost}:${targetPort}`);
+        resolve(this.proxyPort);
+      });
+      proxy.on('error', (e) => {
+        console.log('[OpenClaw] Proxy failed:', e.message);
+        reject(e);
+      });
+    });
+  }
+
+  _stopProxy() {
+    if (this.proxyServer) {
+      this.proxyServer.close();
+      this.proxyServer = null;
+      this.proxyPort = null;
+    }
+  }
+
   // ─── Token Management ───────────────────────────────────────────────
   // Generates a secure token and writes it to the openclaw config file.
   // If the config doesn't exist, creates it with sensible defaults.
@@ -425,25 +507,6 @@ class OpenClawApp {
     }
 
     this.mainWindow = new BrowserWindow(windowOpts);
-
-    // ── Origin header fix ──────────────────────────────────────────
-    // The OpenClaw gateway restricts controlUi access by origin.
-    // When Electron loads http://192.168.1.167:18789, the browser
-    // sets Origin on WebSocket/fetch requests. The gateway rejects
-    // origins that aren't its own host. Fix: rewrite the Origin
-    // header on all outgoing requests to match the gateway URL.
-    this.mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
-      (details, callback) => {
-        const gatewayPort = this.gatewayConfig.port || 18789;
-        const url = new URL(details.url);
-        // Only rewrite for requests going to the gateway
-        if (parseInt(url.port) === gatewayPort || url.hostname === '127.0.0.1' ||
-            url.hostname === 'localhost' || url.hostname.endsWith('.local')) {
-          details.requestHeaders['Origin'] = `http://${url.hostname}:${url.port}`;
-        }
-        callback({ requestHeaders: details.requestHeaders });
-      }
-    );
 
     this.mainWindow.webContents.on('did-finish-load', () => {
       this.injectAppShell();
@@ -652,6 +715,22 @@ class OpenClawApp {
     if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = null; }
     const port = this.gatewayConfig.port;
 
+    // Helper: connect via local proxy for remote hosts, direct for localhost
+    const loadViaProxy = async (ip, gwPort) => {
+      this._stopProxy();
+      try {
+        const localPort = await this._startProxy(ip, gwPort);
+        const url = this.gatewayConfig.mode === 'token' && this.gatewayConfig.token
+          ? `http://127.0.0.1:${localPort}?token=${this.gatewayConfig.token}`
+          : `http://127.0.0.1:${localPort}`;
+        this.mainWindow.loadURL(url);
+        return true;
+      } catch (e) {
+        console.log('[OpenClaw] Proxy failed:', e.message);
+        return false;
+      }
+    };
+
     // ── Priority 1: Saved Mac Mini hostname (instant via mDNS) ──
     if (this.gatewayHost) {
       this.showConnectionScreen(`Connecting to ${this.gatewayHost}...`);
@@ -661,17 +740,18 @@ class OpenClawApp {
         if (isUp) {
           console.log(`[OpenClaw] Connected to saved host ${this.gatewayHost} (${ip}:${port})`);
           this.retryCount = 0;
-          this.mainWindow.loadURL(this._buildUrl(ip, port));
+          await loadViaProxy(ip, port);
           return;
         }
       }
     }
 
-    // ── Priority 2: Localhost ──
+    // ── Priority 2: Localhost (no proxy needed) ──
     const localUp = await this.checkGateway();
     if (localUp) {
       console.log('[OpenClaw] Gateway is up on localhost');
       this.retryCount = 0;
+      this._stopProxy();
       this.mainWindow.loadURL(this.getGatewayUrl());
       return;
     }
@@ -685,25 +765,24 @@ class OpenClawApp {
         if (ip) {
           const isUp = await this.checkRemoteGateway(ip, port);
           if (isUp) {
-            // Save for instant reconnect next time
             this.gatewayHost = hostname;
             this.saveSettings();
-            console.log(`[OpenClaw] Connected to discovered ${hostname} (${ip}:${port}) — saved for next launch`);
+            console.log(`[OpenClaw] Connected to discovered ${hostname} (${ip}:${port}) — saved`);
             this.retryCount = 0;
-            this.mainWindow.loadURL(this._buildUrl(ip, port));
+            await loadViaProxy(ip, port);
             return;
           }
         }
       }
 
-      // ── Priority 4: Subnet scan (fallback, slower) ──
+      // ── Priority 4: Subnet scan (fallback) ──
       this.showConnectionScreen('Scanning network for gateways...');
       const discovered = await this.discoverGateways();
       if (discovered.length > 0) {
         const gw = discovered[0];
         console.log(`[OpenClaw] Found gateway at ${gw.ip}:${gw.port} via subnet scan`);
         this.retryCount = 0;
-        this.mainWindow.loadURL(this._buildUrl(gw.ip, gw.port));
+        await loadViaProxy(gw.ip, gw.port);
         return;
       }
 
@@ -724,14 +803,6 @@ class OpenClawApp {
     console.log(`[OpenClaw] Retry ${this.retryCount}/${this.maxRetries} in ${Math.round(delay / 1000)}s...`);
     this.showConnectionScreen(`Connecting... (attempt ${this.retryCount}/${this.maxRetries})`);
     this.retryTimer = setTimeout(() => this.connectToGateway(), delay);
-  }
-
-  _buildUrl(ip, port) {
-    const base = `http://${ip}:${port}`;
-    if (this.gatewayConfig.mode === 'token' && this.gatewayConfig.token) {
-      return `${base}?token=${this.gatewayConfig.token}`;
-    }
-    return base;
   }
 
   // ─── Connection Screen ────────────────────────────────────────────
